@@ -696,18 +696,38 @@ function onTextareaInput(e){
   if(val.length>200){inp.value=val.slice(val.length-100);lastProcessedLength=inp.value.length;}
 }
 
-function handleBackspace(){if(G.cursorPos<=0)return;setCharClass(G.cursorPos,'rem');G.cursorPos--;if(G.charStates[G.cursorPos]==='ok')G.correctChars=Math.max(0,G.correctChars-1);G.charStates[G.cursorPos]='rem';setCharClass(G.cursorPos,'cur');}
+function handleBackspace(){
+  // If current position has an error, just clear it — don't step back
+  if(G.charStates[G.cursorPos]==='err'){
+    G.charStates[G.cursorPos]='rem';
+    setCharClass(G.cursorPos,'cur');
+    return;
+  }
+  // No error at cursor — step back one position
+  if(G.cursorPos<=0)return;
+  setCharClass(G.cursorPos,'rem');
+  G.cursorPos--;
+  if(G.charStates[G.cursorPos]==='ok')G.correctChars=Math.max(0,G.correctChars-1);
+  G.charStates[G.cursorPos]='rem';
+  setCharClass(G.cursorPos,'cur');
+}
 
 function handleChar(key){
   if(G.cursorPos>=G.raceText.length)return;
+  // *** CRITICAL: if there's already an error here, block until backspaced ***
+  if(G.charStates[G.cursorPos]==='err'){SFX.error();return;}
   const expected=G.raceText[G.cursorPos],isOk=key===expected;
   G.totalTyped++;
-  if(isOk){G.correctChars++;G.charStates[G.cursorPos]='ok';setCharClass(G.cursorPos,'ok');SFX.correct();}
-  else{G.charStates[G.cursorPos]='err';setCharClass(G.cursorPos,'err');SFX.error();}
-  G.cursorPos++;
-  if(G.cursorPos>=G.raceText.length){playerFinished();return;}
-  setCharClass(G.cursorPos,'cur');
-  const el=document.getElementById('rc-'+G.cursorPos);if(el)el.scrollIntoView({block:'nearest',behavior:'smooth'});
+  if(isOk){
+    G.correctChars++;G.charStates[G.cursorPos]='ok';setCharClass(G.cursorPos,'ok');SFX.correct();
+    G.cursorPos++;
+    if(G.cursorPos>=G.raceText.length){playerFinished();return;}
+    setCharClass(G.cursorPos,'cur');
+    const el=document.getElementById('rc-'+G.cursorPos);if(el)el.scrollIntoView({block:'nearest',behavior:'smooth'});
+  }else{
+    // Wrong key — mark error, cursor stays PUT, kart stops moving
+    G.charStates[G.cursorPos]='err';setCharClass(G.cursorPos,'err');SFX.error();
+  }
 }
 
 function setCharClass(i,cls){const el=document.getElementById('rc-'+i);if(el)el.className='ch-'+cls;}
