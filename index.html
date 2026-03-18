@@ -1,477 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>🏁 TURBO TYPE RACERS</title>
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-<style>
-/* ═══════════════════════════════════════════════════════════
-   TURBO TYPE RACERS — Global Reset & Base
-   ═══════════════════════════════════════════════════════════ */
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-
-html,body{
-  min-height:100%;
-  background:#08081a;
-}
-body{
-  font-family:'Press Start 2P','Courier New',monospace;
-  color:#fff;
-  overflow-x:hidden;
-  background:
-    radial-gradient(ellipse 80% 60% at 50% -10%,#1a0a3a,transparent),
-    radial-gradient(ellipse 60% 40% at 80% 100%,#0a1a08,transparent),
-    #08081a;
-}
-
-/* ── Stars background ── */
-#stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden}
-.star{position:absolute;background:#fff;border-radius:50%;animation:twinkle var(--d,3s) var(--del,0s) ease-in-out infinite}
-@keyframes twinkle{0%,100%{opacity:.2;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
-
-/* ── Screen containers ── */
-.screen{display:none;flex-direction:column;align-items:center;min-height:100vh;padding:2rem 1.25rem;position:relative;z-index:1}
-.screen.active{display:flex}
-#screen-menu{justify-content:center;gap:2rem;text-align:center}
-
-/* ═══════════════════════════════════════════════════════════
-   LOGO
-   ═══════════════════════════════════════════════════════════ */
-.logo-wrap{display:flex;flex-direction:column;align-items:center;gap:.6rem;margin-bottom:1.25rem}
-.logo-main{
-  font-size:clamp(1.4rem,5vw,3rem);
-  color:#ffd700;
-  text-shadow:4px 4px 0 #b8860b,7px 7px 0 #5a4200,8px 8px 0 #000;
-  animation:logoHover 2.5s ease-in-out infinite;
-  letter-spacing:.04em;
-  line-height:1.3;
-}
-.logo-sub{
-  font-size:clamp(.75rem,2.2vw,1.1rem);
-  color:#ff6b35;
-  text-shadow:2px 2px 0 #8b2500,3px 3px 0 #000;
-  letter-spacing:.12em;
-}
-@keyframes logoHover{0%,100%{transform:translateY(0) rotate(-.5deg)}50%{transform:translateY(-8px) rotate(.5deg)}}
-
-.logo-coins{display:flex;gap:.5rem;align-items:center;margin:.25rem 0}
-.coin{display:inline-block;width:28px;height:28px;background:radial-gradient(circle at 40% 35%,#ffe680,#ffd700,#b8860b);border-radius:50%;border:3px solid #b8860b;animation:coinSpin 1.2s linear infinite}
-.coin:nth-child(2){animation-delay:-.4s}.coin:nth-child(3){animation-delay:-.8s}
-@keyframes coinSpin{0%{transform:scaleX(1)}25%{transform:scaleX(.15)}50%{transform:scaleX(1)}75%{transform:scaleX(.15)}100%{transform:scaleX(1)}}
-
-/* ═══════════════════════════════════════════════════════════
-   BUTTONS
-   ═══════════════════════════════════════════════════════════ */
-.menu-buttons{display:flex;flex-direction:column;gap:1rem;align-items:center}
-.btn{
-  font-family:inherit;
-  font-size:clamp(.7rem,1.8vw,.85rem);
-  padding:1rem 2.25rem;
-  background:#c0392b;
-  color:#fff;
-  border:4px solid #fff;
-  border-bottom-color:#7b241c;
-  border-right-color:#7b241c;
-  cursor:pointer;
-  text-transform:uppercase;
-  letter-spacing:.06em;
-  min-width:240px;
-  transition:transform .1s,filter .1s;
-  text-shadow:1px 1px 0 #000;
-  line-height:1.5;
-}
-.btn:hover{filter:brightness(1.15);transform:scale(1.04)}
-.btn:active{transform:scale(.97);border-top-color:#7b241c;border-left-color:#7b241c;border-bottom-color:#fff;border-right-color:#fff}
-.btn-gold{background:#b8860b;border-bottom-color:#5a4200;border-right-color:#5a4200}
-.btn-blue{background:#1a6eb5;border-bottom-color:#0d3d6e;border-right-color:#0d3d6e}
-.btn-green{background:#1e8449;border-bottom-color:#0b4d26;border-right-color:#0b4d26}
-.btn-gray{background:#555;border-bottom-color:#222;border-right-color:#222}
-.btn-sm{font-size:.65rem;padding:.7rem 1.2rem;min-width:0}
-.btn-wide{min-width:300px}
-
-/* ═══════════════════════════════════════════════════════════
-   CHARACTER SELECT
-   ═══════════════════════════════════════════════════════════ */
-#screen-character{gap:1.25rem;padding-top:1.25rem;overflow-y:auto;justify-content:flex-start}
-.screen-title{
-  font-size:clamp(.85rem,2.5vw,1.2rem);
-  color:#ffd700;
-  text-shadow:2px 2px 0 #b8860b,3px 3px 0 #000;
-  margin-bottom:.75rem;
-  text-align:center;
-}
-
-.char-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;width:100%;max-width:820px}
-@media(max-width:600px){.char-grid{grid-template-columns:repeat(2,1fr)}}
-
-/* Character cards */
-.char-card{
-  background:#0d0d2a;
-  border:3px solid #2a2a4a;
-  padding:.9rem .6rem .75rem;
-  text-align:center;
-  cursor:pointer;
-  transition:transform .12s,border-color .2s;
-  border-radius:6px;
-  position:relative;
-  overflow:hidden;
-}
-.char-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.04),transparent);pointer-events:none}
-.char-card:hover{transform:scale(1.06);border-color:#555}
-.char-card.selected{border-color:#ffd700;background:#1a1800;box-shadow:0 0 14px rgba(255,215,0,.3)}
-.char-card.selected::after{content:'✓';position:absolute;top:5px;right:8px;font-size:.6rem;color:#ffd700}
-
-.char-avatar{width:56px;height:56px;border-radius:50%;margin:0 auto .5rem;display:flex;align-items:center;justify-content:center;font-size:1.7rem;border:3px solid rgba(255,255,255,.15);position:relative;overflow:hidden}
-.char-avatar::before{content:'';position:absolute;inset:0;background:inherit;filter:brightness(.7);border-radius:50%}
-.char-avatar span{position:relative;z-index:1}
-
-/* QA FIX: bumped char-name up from .42rem → .6rem */
-.char-name{font-size:.6rem;color:#fff;margin-bottom:.25rem;letter-spacing:.05em}
-/* QA FIX: bumped char-title up from .3rem → .42rem */
-.char-title{font-size:.42rem;color:#888;margin-bottom:.4rem;line-height:1.6}
-.char-stats{display:flex;flex-direction:column;gap:4px;margin-top:.3rem}
-.stat-row{display:flex;align-items:center;gap:5px}
-/* QA FIX: stat-lbl bumped from .28rem → .42rem */
-.stat-lbl{font-size:.42rem;color:#aaa;width:22px;text-align:right;flex-shrink:0}
-.stat-bar{flex:1;height:5px;background:#1a1a2a;border-radius:2px;overflow:hidden}
-.stat-fill{height:100%;border-radius:2px;transition:width .4s}
-/* QA FIX: char-trait bumped from .28rem → .4rem */
-.char-trait{font-size:.4rem;margin-top:.35rem;padding:.25rem .35rem;border-radius:3px;line-height:1.6}
-
-/* F012 — Locked character overlay */
-.char-card.locked{opacity:.45;cursor:not-allowed;filter:grayscale(.7)}
-.char-card.locked:hover{transform:none;border-color:#2a2a4a}
-.char-lock-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,.55);border-radius:4px;gap:.3rem}
-.char-lock-icon{font-size:1.4rem}
-.char-lock-req{font-size:.38rem;color:#aaa;text-align:center;line-height:1.6;padding:0 .3rem}
-
-/* AI-only sections — hidden in online mode */
-.ai-only{transition:opacity .2s}
-.ai-only.hidden{display:none !important}
-
-/* Difficulty picker */
-.difficulty-row{display:flex;flex-direction:column;align-items:center;gap:.6rem;max-width:820px;width:100%}
-/* QA FIX: diff-label bumped from .5rem → .65rem */
-.diff-label{font-size:.65rem;color:#aaa}
-.diff-btns{display:flex;gap:.6rem}
-.diff-btn{
-  font-family:inherit;
-  font-size:.6rem;
-  padding:.55rem 1.1rem;
-  background:#1a1a2a;
-  color:#888;
-  border:2px solid #333;
-  cursor:pointer;
-  transition:all .15s;
-}
-.diff-btn.active{background:#1a1800;color:#ffd700;border-color:#ffd700}
-
-/* Match length config */
-.match-config-row{display:flex;flex-direction:column;align-items:center;gap:.5rem;max-width:820px;width:100%}
-.match-config-label{font-size:.65rem;color:#aaa}
-.match-config-btns{display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center}
-.match-cfg-btn{
-  font-family:inherit;
-  font-size:.55rem;
-  padding:.5rem 1rem;
-  background:#1a1a2a;
-  color:#888;
-  border:2px solid #333;
-  cursor:pointer;
-  transition:all .15s;
-}
-.match-cfg-btn.active{background:#0a1a2a;color:#4a9fe0;border-color:#4a9fe0}
-
-/* ═══════════════════════════════════════════════════════════
-   ONLINE PANEL
-   ═══════════════════════════════════════════════════════════ */
-.online-panel{background:#0a1422;border:2px solid #1a6eb5;border-radius:6px;padding:1rem 1.25rem;max-width:820px;width:100%;display:flex;flex-direction:column;gap:.75rem}
-/* QA FIX: online-title bumped from .55rem → .7rem */
-.online-title{font-size:.7rem;color:#4a9fe0;text-align:center}
-.online-actions{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;justify-content:center}
-.room-input{
-  font-family:inherit;
-  font-size:.6rem;
-  padding:.55rem .9rem;
-  background:#0a0a1e;
-  color:#fff;
-  border:2px solid #1a6eb5;
-  width:200px;
-  letter-spacing:.1em;
-  text-transform:uppercase;
-}
-.room-code-wrap{text-align:center;padding:.6rem 1.25rem;background:#080818;border:2px dashed #1a6eb5;border-radius:4px;display:none}
-/* QA FIX: room-code labels bumped up */
-.room-code-lbl{font-size:.5rem;color:#888;margin-bottom:.35rem}
-.room-code-val{font-size:.95rem;color:#4a9fe0;letter-spacing:.2em}
-.room-code-hint{font-size:.48rem;color:#666;margin-top:.35rem}
-/* QA FIX: online-status bumped from .4rem → .6rem */
-.online-status{font-size:.6rem;color:#888;text-align:center;min-height:1.1rem}
-
-/* Invite link area */
-.invite-link-wrap{display:none;text-align:center;margin-top:.25rem}
-.invite-copy-btn{
-  font-family:inherit;
-  font-size:.52rem;
-  padding:.45rem 1rem;
-  background:#1e8449;
-  color:#fff;
-  border:2px solid #2ecc71;
-  cursor:pointer;
-  border-radius:4px;
-  margin-top:.35rem;
-}
-.invite-copy-btn:hover{filter:brightness(1.15)}
-
-.lobby-wrap{background:#0a1422;border:2px solid #1a6eb5;border-radius:8px;padding:1.25rem;max-width:780px;width:100%;display:none}
-.lobby-wrap.visible{display:block}
-/* QA FIX: lobby-heading bumped from .6rem → .75rem */
-.lobby-heading{font-size:.75rem;color:#4a9fe0;margin-bottom:.9rem;text-align:center}
-.lobby-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem;min-height:80px;margin-bottom:.9rem}
-@media(max-width:500px){.lobby-grid{grid-template-columns:repeat(2,1fr)}}
-.lobby-slot{display:flex;flex-direction:column;align-items:center;gap:4px;background:#0d1828;border:1px dashed #2a3a4a;padding:.6rem .75rem;border-radius:4px;min-width:90px}
-.lobby-slot.filled{border-style:solid;border-color:#1a6eb5}
-.lobby-slot-emoji{font-size:1.6rem}
-/* QA FIX: lobby-slot-name bumped from .35rem → .52rem */
-.lobby-slot-name{font-size:.52rem;color:#aaa}
-.lobby-slot-you{color:#ffd700!important}
-.lobby-actions{display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap}
-
-/* ═══════════════════════════════════════════════════════════
-   COUNTDOWN
-   ═══════════════════════════════════════════════════════════ */
-#screen-countdown{justify-content:center;align-items:center;gap:1.25rem}
-.countdown-num{font-size:clamp(5rem,25vw,14rem);animation:countPop .9s ease-out both;line-height:1}
-.cd-3{color:#e74c3c;text-shadow:6px 6px 0 #7b241c}
-.cd-2{color:#ffd700;text-shadow:6px 6px 0 #b8860b}
-.cd-1{color:#2ecc71;text-shadow:6px 6px 0 #1a6a2a}
-.cd-go{font-size:clamp(2rem,12vw,7rem);color:#fff;text-shadow:4px 4px 0 #1a6eb5,7px 7px 0 #0a1e3a}
-@keyframes countPop{0%{transform:scale(2.5) rotate(-5deg);opacity:0}40%{transform:scale(1.15) rotate(1deg);opacity:1}70%{transform:scale(.97) rotate(-.5deg)}100%{transform:scale(1) rotate(0)}}
-/* QA FIX: countdown-char bumped from .8rem → 1rem */
-.countdown-char{font-size:1rem;color:#ccc;margin-top:.6rem}
-
-/* ═══════════════════════════════════════════════════════════
-   RACE SCREEN
-   ═══════════════════════════════════════════════════════════ */
-#screen-race{padding:.6rem;gap:.6rem;justify-content:flex-start;min-height:100vh}
-
-.track-wrap{background:#081408;border:3px solid #1a4a1a;border-radius:8px;padding:.75rem .9rem;width:100%}
-.track-title-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem}
-/* QA FIX: track-label bumped from .45rem → .6rem */
-.track-label{font-size:.6rem;color:#1a8a1a}
-/* QA FIX: lap-counter bumped from .5rem → .65rem */
-.lap-counter{font-size:.65rem;color:#ffd700}
-
-.lane-wrap{margin-bottom:.45rem}
-.lane{display:flex;align-items:center;gap:.6rem;height:40px}
-.lane-info{width:82px;flex-shrink:0;text-align:right}
-.lane-char{font-size:.9rem;line-height:1}
-/* QA FIX: lane-name bumped from .28rem → .42rem */
-.lane-name{font-size:.42rem;color:#ccc;line-height:1.4}
-.lane-track{flex:1;height:34px;background:#0e1e0e;border-radius:4px;position:relative;overflow:visible;border:1px solid #1a2a1a}
-.lane-track::before{content:'';position:absolute;top:50%;left:0;right:0;height:2px;background:repeating-linear-gradient(90deg,transparent,transparent 15px,rgba(255,255,255,.07) 15px,rgba(255,255,255,.07) 25px);transform:translateY(-50%);pointer-events:none}
-
-.item-box-track{position:absolute;top:50%;transform:translateY(-50%);width:22px;height:22px;z-index:2;display:flex;align-items:center;justify-content:center;border-radius:3px;font-size:13px;animation:iboxGlow 1.5s linear infinite}
-@keyframes iboxGlow{0%{box-shadow:0 0 0 2px #ffd700,0 0 6px #ffd700}33%{box-shadow:0 0 0 2px #e74c3c,0 0 6px #e74c3c}66%{box-shadow:0 0 0 2px #4a9fe0,0 0 6px #4a9fe0}100%{box-shadow:0 0 0 2px #ffd700,0 0 6px #ffd700}}
-.item-box-track.used{opacity:.15;animation:none;box-shadow:none}
-
-/* Karts */
-.kart{position:absolute;top:50%;transform:translate(-50%,-50%);z-index:10;transition:left .12s linear;pointer-events:none;display:flex;flex-direction:column;align-items:center}
-.kart-body{width:34px;height:18px;border-radius:4px 4px 2px 2px;position:relative;display:flex;align-items:center;justify-content:center;transition:filter .3s}
-.kart-body::before{content:'';position:absolute;top:-7px;left:7px;right:7px;height:9px;background:inherit;border-radius:3px 3px 0 0;filter:brightness(1.3)}
-.kart-body::after{content:'';position:absolute;bottom:-4px;left:1px;right:1px;height:5px;background:#111;border-radius:3px}
-/* QA FIX: kart-init bumped from .3rem → .5rem, color brightened */
-.kart-init{font-size:.5rem;color:#fff;text-shadow:1px 1px 0 rgba(0,0,0,.9);position:relative;z-index:1;font-weight:bold}
-.kart.boosted .kart-body::after{background:#ff6b00;box-shadow:0 2px 8px #ff6b00;animation:flame .25s alternate infinite}
-@keyframes flame{from{height:5px}to{height:10px}}
-.kart.slowed .kart-body{filter:grayscale(.85) brightness(.55)}
-.finish-flag-icon{position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:18px;z-index:3}
-/* QA FIX: place-pip bumped from .28rem → .44rem */
-.place-pip{position:absolute;top:-15px;left:-4px;font-size:.44rem;padding:2px 4px;border-radius:2px;font-family:inherit;line-height:1.4}
-
-/* Stats bar */
-.stats-panel{display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap;background:#08082a;border:2px solid #2a2a5a;border-radius:6px;padding:.5rem .9rem;width:100%}
-.stat-group{display:flex;flex-direction:column;align-items:center;gap:2px}
-.stat-num{font-size:clamp(1rem,3.5vw,1.7rem);color:#ffd700;text-shadow:2px 2px 0 #b8860b;line-height:1}
-/* QA FIX: stat-lbl-r bumped from .35rem → .52rem */
-.stat-lbl-r{font-size:.52rem;color:#888;text-transform:uppercase}
-.place-badge{font-size:clamp(.8rem,2.5vw,1.3rem);padding:.3rem .7rem;border-radius:3px;line-height:1}
-.p1{background:#ffd700;color:#000}.p2{background:#b0b0b0;color:#000}.p3{background:#cd7f32;color:#fff}.p4{background:#333;color:#aaa}
-
-/* Item slot */
-.item-panel{display:flex;align-items:center;gap:.6rem;margin-left:auto}
-.item-slot{width:56px;height:56px;border-radius:4px;border:3px solid #fff;display:flex;align-items:center;justify-content:center;font-size:1.8rem;cursor:pointer;transition:transform .1s;background:repeating-linear-gradient(45deg,#ffd700 0,#ffd700 25%,#e74c3c 25%,#e74c3c 50%,#4a9fe0 50%,#4a9fe0 75%,#2ecc71 75%,#2ecc71 100%);background-size:14px 14px;animation:iboxShift 1.2s linear infinite}
-@keyframes iboxShift{from{background-position:0 0}to{background-position:14px 0}}
-.item-slot:hover{transform:scale(1.08)}.item-slot:active{transform:scale(.92)}
-/* QA FIX: empty item slot text bumped from .38rem → .55rem, color brightened */
-.item-slot.empty{background:#0d0d1e;border-color:#444;animation:none;font-size:.55rem;color:#777}
-/* QA FIX: item-hint bumped from .32rem → .5rem, color brightened */
-.item-hint{font-size:.5rem;color:#888;text-align:center;line-height:1.6;margin-top:3px}
-
-/* Typing panel */
-.typing-panel{flex:1;background:#060616;border:3px solid #1a1a3a;border-radius:8px;padding:.9rem;display:flex;flex-direction:column;gap:.6rem;width:100%;cursor:text;outline:none;position:relative}
-.typing-panel.focused{border-color:#ffd700;box-shadow:0 0 0 2px rgba(255,215,0,.18)}
-/* QA FIX: race-text font bumped up, rem characters brightened significantly */
-.race-text-wrap{font-family:'Courier New',Courier,monospace;font-size:clamp(.95rem,2.5vw,1.2rem);line-height:2.2;word-wrap:break-word;overflow-wrap:break-word;user-select:none}
-.ch-ok{color:#2ecc71}
-.ch-err{color:#e74c3c;background:rgba(231,76,60,.2);border-radius:2px}
-.ch-cur{color:#ffd700;background:rgba(255,215,0,.18);border-bottom:2px solid #ffd700;animation:blink .65s ease-in-out infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-/* QA FIX: ch-rem brightened from #2a2a4a → #7a7aaa so keyboard text is readable */
-.ch-rem{color:#8888bb}
-
-.progress-outer{height:8px;background:#1a1a2a;border-radius:4px;overflow:hidden;width:100%}
-.progress-inner{height:100%;border-radius:4px;background:linear-gradient(90deg,#c0392b,#e67e22,#ffd700,#1e8449);background-size:200%;transition:width .12s;animation:pShimmer 2s linear infinite}
-@keyframes pShimmer{from{background-position:100%}to{background-position:0%}}
-
-.focus-bar{display:flex;align-items:center;gap:.6rem}
-/* QA FIX: focus-indicator text bumped from .42rem → .6rem */
-.focus-indicator{font-size:.6rem;color:#666;padding:.4rem .8rem;border:1px dashed #1a1a2a;border-radius:4px;transition:all .25s}
-.focus-indicator.on{color:#2ecc71;border-color:#2ecc71;border-style:solid}
-.real-input{position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;font-size:16px;border:none;background:transparent;resize:none;outline:none;cursor:text;color:transparent;caret-color:transparent;z-index:5}
-
-/* Timer bar (countdown timer during race) */
-.race-timer-wrap{display:flex;align-items:center;gap:.6rem;width:100%}
-.race-timer-bar-outer{flex:1;height:6px;background:#1a1a2a;border-radius:3px;overflow:hidden}
-.race-timer-bar-inner{height:100%;border-radius:3px;background:#4a9fe0;transition:width .5s linear}
-/* QA FIX: race-timer-label bumped from tiny → .55rem */
-.race-timer-label{font-size:.55rem;color:#4a9fe0;white-space:nowrap}
-
-/* ═══════════════════════════════════════════════════════════
-   NOTIFICATIONS & SPLASH
-   ═══════════════════════════════════════════════════════════ */
-.notif{position:fixed;top:1rem;right:1rem;background:#0d0d2a;border:2px solid #ffd700;padding:.7rem 1rem;border-radius:6px;font-size:.6rem;z-index:200;animation:slideIn .3s ease-out;max-width:240px;line-height:1.7}
-@keyframes slideIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
-.powerup-splash{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.92);border:3px solid #ffd700;padding:1.25rem 1.75rem;border-radius:8px;text-align:center;z-index:300;pointer-events:none;animation:splash 2.2s ease-out forwards}
-@keyframes splash{0%{transform:translate(-50%,-55%) scale(.4);opacity:0}15%{transform:translate(-50%,-50%) scale(1.15);opacity:1}75%{transform:translate(-50%,-50%) scale(1);opacity:1}100%{transform:translate(-50%,-45%) scale(.85);opacity:0}}
-.splash-icon{font-size:2.8rem;display:block;margin-bottom:.5rem}
-/* QA FIX: splash-name bumped from .65rem → .8rem */
-.splash-name{font-size:.8rem;color:#ffd700}
-/* QA FIX: splash-desc bumped from .42rem → .58rem */
-.splash-desc{font-size:.58rem;color:#ccc;margin-top:.3rem}
-
-/* ═══════════════════════════════════════════════════════════
-   RESULTS
-   ═══════════════════════════════════════════════════════════ */
-#screen-results{justify-content:center;gap:1.75rem;padding:2.25rem 1.25rem}
-.results-title{font-size:clamp(1rem,3vw,1.8rem);color:#ffd700;text-shadow:3px 3px 0 #b8860b,5px 5px 0 #000;text-align:center;animation:rBounce .6s ease-out}
-@keyframes rBounce{0%{transform:scale(0) rotate(-180deg);opacity:0}70%{transform:scale(1.1) rotate(3deg)}100%{transform:scale(1) rotate(0);opacity:1}}
-
-.podium{display:flex;align-items:flex-end;gap:.4rem;justify-content:center}
-.pod-col{display:flex;flex-direction:column;align-items:center;gap:.5rem}
-.pod-emoji{font-size:2.4rem;animation:podB var(--del,.1s) ease-out both}
-.pod-emoji.second{--del:.2s}.pod-emoji.third{--del:.4s}
-@keyframes podB{0%{transform:translateY(-40px);opacity:0}60%{transform:translateY(4px)}100%{transform:translateY(0);opacity:1}}
-/* QA FIX: pod-name bumped from .4rem → .55rem */
-.pod-name{font-size:.55rem;max-width:90px;text-align:center;color:#eee}
-.pod-time{font-size:.5rem;color:#aaa}
-.pod-wpm{font-size:.5rem;color:#2ecc71}
-.pod-block{width:90px;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:bold;border-radius:3px 3px 0 0}
-.pod-1{background:#ffd700;color:#000;height:90px}.pod-2{background:#b0b0b0;color:#000;height:65px}.pod-3{background:#cd7f32;color:#fff;height:48px}
-
-.results-list{background:#080820;border:2px solid #2a2a5a;border-radius:8px;padding:.9rem;width:100%;max-width:560px}
-/* QA FIX: res-row font bumped from .48rem → .62rem */
-.res-row{display:flex;align-items:center;gap:.9rem;padding:.55rem 0;border-bottom:1px solid #12122a;font-size:.62rem}
-.res-row:last-child{border-bottom:none}
-.res-place{width:32px;color:#ffd700}
-.res-emoji{font-size:1.2rem;flex-shrink:0}
-.res-name{flex:1;color:#ddd}
-.res-time{color:#aaa;width:65px;text-align:right}
-.res-wpm{color:#2ecc71;width:60px;text-align:right}
-.res-you{font-size:.42rem;color:#ffd700;margin-left:4px}
-
-/* ═══════════════════════════════════════════════════════════
-   MISC
-   ═══════════════════════════════════════════════════════════ */
-.fw{position:fixed;pointer-events:none;font-size:1.8rem;z-index:400;animation:fwA 1.8s ease-out forwards}
-@keyframes fwA{0%{transform:scale(0);opacity:1}50%{transform:scale(1.8) translateY(var(--fy,-80px));opacity:1}100%{transform:scale(.3) translateY(var(--fy2,-180px));opacity:0}}
-.row{display:flex;gap:.6rem;align-items:center;justify-content:center;flex-wrap:wrap}
-.divider{width:100%;max-width:820px;border:none;border-top:1px dashed #1a1a3a;margin:.35rem 0}
-/* QA FIX: text-muted bumped from .4rem → .55rem */
-.text-muted{font-size:.55rem;color:#666;text-align:center}
-.mute-btn{position:fixed;bottom:1rem;right:1rem;z-index:500;font-family:inherit;font-size:.5rem;padding:.4rem .7rem;background:#1a1a2a;color:#888;border:1px solid #444;cursor:pointer;border-radius:3px}
-.mute-btn:hover{color:#fff;border-color:#888}
-
-/* How to play text */
-.howto-text{font-size:.6rem;line-height:2.8;color:#ccc}
-
-/* ═══════════════════════════════════════════════════════════
-   F009 — STATS SCREEN
-   ═══════════════════════════════════════════════════════════ */
-#screen-stats{justify-content:flex-start;gap:1.25rem;overflow-y:auto;padding-bottom:2rem}
-.stats-section{background:#08082a;border:2px solid #2a2a5a;border-radius:8px;padding:1rem 1.25rem;width:100%;max-width:700px}
-.stats-section-title{font-size:.65rem;color:#4a9fe0;margin-bottom:.9rem;text-align:center;letter-spacing:.08em}
-.global-stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem}
-@media(min-width:500px){.global-stats-grid{grid-template-columns:repeat(4,1fr)}}
-.gstat-box{background:#0a0a1e;border:2px solid #1a1a3a;border-radius:6px;padding:.75rem .5rem;text-align:center}
-.gstat-num{font-size:clamp(.9rem,3vw,1.4rem);color:#ffd700;text-shadow:2px 2px 0 #b8860b;line-height:1;margin-bottom:.35rem}
-.gstat-lbl{font-size:.42rem;color:#777;text-transform:uppercase}
-.char-stats-list{display:flex;flex-direction:column;gap:.5rem}
-.char-stat-row{display:flex;align-items:center;gap:.75rem;padding:.5rem .6rem;background:#0a0a1e;border:1px solid #1a1a2a;border-radius:4px}
-.char-stat-emoji{font-size:1.3rem;flex-shrink:0}
-.char-stat-name{font-size:.52rem;color:#fff;width:65px;flex-shrink:0}
-.char-stat-detail{flex:1;font-size:.42rem;color:#888;display:flex;gap:.75rem;flex-wrap:wrap}
-.char-stat-detail b{color:#ffd700}
-.no-stats-msg{font-size:.6rem;color:#555;text-align:center;padding:1rem}
-.stats-clear-btn{font-family:inherit;font-size:.5rem;padding:.45rem .9rem;background:transparent;color:#555;border:1px solid #333;cursor:pointer;border-radius:3px;margin-top:.5rem}
-.stats-clear-btn:hover{color:#e74c3c;border-color:#e74c3c}
-.pb-badge{display:inline-block;font-size:.38rem;padding:2px 5px;background:#1a1800;border:1px solid #ffd700;border-radius:3px;color:#ffd700;margin-left:4px;vertical-align:middle}
-
-/* ═══════════════════════════════════════════════════════════
-   F010 — CUSTOM TEXT SCREEN
-   ═══════════════════════════════════════════════════════════ */
-#screen-customtext{justify-content:center;gap:1.25rem;max-width:720px;margin:0 auto}
-.custom-text-area{
-  font-family:'Courier New',Courier,monospace;
-  font-size:.8rem;
-  line-height:1.9;
-  width:100%;
-  max-width:660px;
-  min-height:180px;
-  background:#060616;
-  color:#ccc;
-  border:2px solid #2a2a5a;
-  border-radius:6px;
-  padding:.85rem 1rem;
-  resize:vertical;
-  outline:none;
-}
-.custom-text-area:focus{border-color:#ffd700;box-shadow:0 0 0 2px rgba(255,215,0,.15)}
-.custom-text-area::placeholder{color:#2a2a4a}
-.custom-text-meta{font-size:.52rem;color:#666;text-align:right;width:100%;max-width:660px;margin-top:.25rem}
-.custom-text-meta span{color:#aaa}
-.custom-text-actions{display:flex;gap:.75rem;align-items:center;justify-content:center;flex-wrap:wrap}
-.custom-text-presets{width:100%;max-width:660px}
-.custom-text-presets-title{font-size:.52rem;color:#666;margin-bottom:.5rem}
-.preset-btns{display:flex;flex-wrap:wrap;gap:.4rem}
-.preset-btn{font-family:inherit;font-size:.45rem;padding:.35rem .7rem;background:#0a0a1e;color:#888;border:1px solid #222;cursor:pointer;border-radius:3px;transition:all .15s}
-.preset-btn:hover{color:#ffd700;border-color:#ffd700}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>🏁 TURBO TYPE RACERS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 </head>
 <body>
+
 <div id="stars"></div>
 <button class="mute-btn" id="mute-btn" onclick="toggleMute()">🔊 SFX</button>
 
-<!-- ═══ MENU ═══════════════════════════════════════════════ -->
+<!-- ═══ MENU ═══════════════════════════════════════════════════ -->
 <div id="screen-menu" class="screen active">
   <div class="logo-wrap">
     <span class="logo-main">TURBO TYPE</span>
     <span class="logo-main" style="font-size:clamp(1rem,4vw,2.4rem)">RACERS</span>
     <span class="logo-sub">⌨️ GRAND PRIX ⌨️</span>
-    <div class="logo-coins"><div class="coin"></div><div class="coin"></div><div class="coin"></div></div>
+    <div class="logo-coins">
+      <div class="coin"></div>
+      <div class="coin"></div>
+      <div class="coin"></div>
+    </div>
   </div>
   <div class="menu-buttons">
-    <button class="btn btn-gold" onclick="startVsAI()">🏎️ 1 PLAYER VS BOTS</button>
-    <button class="btn btn-blue" onclick="gotoOnlineMenu()">🌐 ONLINE MULTIPLAYER</button>
+    <button class="btn btn-gold"  onclick="startVsAI()">🏎️ 1 PLAYER VS BOTS</button>
+    <button class="btn btn-blue"  onclick="gotoOnlineMenu()">🌐 ONLINE MULTIPLAYER</button>
     <button class="btn btn-green" onclick="gotoStats()">📊 MY STATS</button>
-    <button class="btn btn-gray" onclick="gotoHowToPlay()">❓ HOW TO PLAY</button>
+    <button class="btn btn-gray"  onclick="gotoHowToPlay()">❓ HOW TO PLAY</button>
   </div>
   <div style="margin-top:1.25rem" class="text-muted">SPACE = USE ITEM · BACKSPACE = FIX TYPOS</div>
 </div>
 
-<!-- ═══ HOW TO PLAY ════════════════════════════════════════ -->
+<!-- ═══ HOW TO PLAY ════════════════════════════════════════════ -->
 <div id="screen-howto" class="screen" style="justify-content:center;gap:1.25rem;max-width:720px;margin:0 auto">
   <div class="screen-title">HOW TO PLAY</div>
   <div style="background:#08082a;border:2px solid #2a2a5a;border-radius:8px;padding:1.25rem 1.5rem;width:100%;max-width:640px">
@@ -481,14 +44,14 @@ body{
       <p>3️⃣ Type the text — <span style="color:#2ecc71">green</span>=correct, <span style="color:#e74c3c">red</span>=wrong</p>
       <p>⌫ BACKSPACE to fix mistakes</p>
       <p>📦 Hit item boxes at 25%, 50%, 75% of track</p>
-      <p>SPACE to launch your item (rebind from TAB)</p>
+      <p>SPACE to launch your item</p>
       <p>🚀 NITRO — speed boost 5s</p>
       <p>⭐ OVERDRIVE — max speed 8s</p>
       <p>🧲 MAGNET — pulls you toward the leader</p>
       <p>🎯 MISSILE — hits the kart directly ahead</p>
       <p>⚡ EMP BLAST — slows all opponents</p>
       <p>🛢️ OIL SLICK — trips the kart behind you</p>
-      <p>⏱ Race runs until all racers finish</p>
+      <p>⏱ Race ends when you finish or time runs out</p>
       <p>🔒 Win races to unlock new characters</p>
       <p>📊 Stats saved automatically in your browser</p>
     </div>
@@ -496,32 +59,32 @@ body{
   <button class="btn" onclick="showScreen('menu')">⬅ BACK</button>
 </div>
 
-<!-- ═══ CHARACTER SELECT ══════════════════════════════════ -->
+<!-- ═══ CHARACTER SELECT ════════════════════════════════════════ -->
 <div id="screen-character" class="screen">
   <div class="screen-title" id="char-screen-title">CHOOSE YOUR RACER</div>
   <div id="char-screen-subtitle" class="text-muted" style="display:none;margin-bottom:.5rem"></div>
   <div class="char-grid" id="char-grid"></div>
   <hr class="divider">
 
-  <!-- Difficulty — AI only -->
+  <!-- AI-only: difficulty -->
   <div class="difficulty-row ai-only" id="ai-difficulty-row">
     <div class="diff-label">AI DIFFICULTY</div>
     <div class="diff-btns">
-      <button class="diff-btn" data-diff="easy"   onclick="setDiff('easy')">🟢 EASY</button>
+      <button class="diff-btn"        data-diff="easy"   onclick="setDiff('easy')">🟢 EASY</button>
       <button class="diff-btn active" data-diff="medium" onclick="setDiff('medium')">🟡 MEDIUM</button>
-      <button class="diff-btn" data-diff="hard"   onclick="setDiff('hard')">🔴 HARD</button>
+      <button class="diff-btn"        data-diff="hard"   onclick="setDiff('hard')">🔴 HARD</button>
     </div>
   </div>
 
   <hr class="divider ai-only" id="ai-divider-1">
 
-  <!-- Match length — AI only -->
+  <!-- AI-only: match duration -->
   <div class="match-config-row ai-only" id="ai-duration-row">
     <div class="match-config-label">⏱ MATCH DURATION</div>
     <div class="match-config-btns">
-      <button class="match-cfg-btn" data-dur="180" onclick="setMatchDuration(180)">3 MIN</button>
+      <button class="match-cfg-btn"        data-dur="180" onclick="setMatchDuration(180)">3 MIN</button>
       <button class="match-cfg-btn active" data-dur="300" onclick="setMatchDuration(300)">5 MIN</button>
-      <button class="match-cfg-btn" data-dur="480" onclick="setMatchDuration(480)">8 MIN</button>
+      <button class="match-cfg-btn"        data-dur="480" onclick="setMatchDuration(480)">8 MIN</button>
     </div>
   </div>
 
@@ -529,16 +92,16 @@ body{
 
   <div class="row">
     <button class="btn btn-gold btn-wide" id="race-btn" disabled onclick="startRace()">SELECT A RACER FIRST</button>
-    <!-- Custom text — AI only -->
+    <!-- AI-only: custom text -->
     <button class="btn btn-blue btn-sm ai-only" id="ai-custom-text-btn" onclick="gotoCustomText()">✏️ CUSTOM TEXT</button>
     <button class="btn btn-gray btn-sm" id="char-back-btn" onclick="charScreenBack()">⬅ BACK</button>
   </div>
 </div>
 
-<!-- ═══ STATS ══════════════════════════════════════════════ -->
+<!-- ═══ STATS ═══════════════════════════════════════════════════ -->
 <div id="screen-stats" class="screen">
   <div class="screen-title">📊 MY STATS</div>
-  <div class="stats-section" id="stats-global-section">
+  <div class="stats-section">
     <div class="stats-section-title">⚡ OVERALL</div>
     <div class="global-stats-grid" id="stats-global-grid"></div>
   </div>
@@ -552,17 +115,20 @@ body{
   </div>
 </div>
 
-<!-- ═══ CUSTOM TEXT ════════════════════════════════════════ -->
+<!-- ═══ CUSTOM TEXT ══════════════════════════════════════════════ -->
 <div id="screen-customtext" class="screen">
   <div class="screen-title">✏️ CUSTOM TEXT</div>
   <div style="font-size:.55rem;color:#888;text-align:center;max-width:620px;line-height:2">
-    Paste anything — a chapter, your notes, some code.<br>Minimum 80 characters. Typos in your text are your problem. 😄
+    Paste anything — a chapter, your notes, some code.<br>
+    Minimum 80 characters. Typos in your text are your problem. 😄
   </div>
   <div class="custom-text-presets">
     <div class="custom-text-presets-title">QUICK PRESETS →</div>
     <div class="preset-btns" id="preset-btns"></div>
   </div>
-  <textarea class="custom-text-area" id="custom-text-input"
+  <textarea
+    class="custom-text-area"
+    id="custom-text-input"
     placeholder="Paste or type your custom race text here..."
     oninput="onCustomTextInput()"></textarea>
   <div class="custom-text-meta">
@@ -576,7 +142,7 @@ body{
   </div>
 </div>
 
-<!-- ═══ ONLINE ════════════════════════════════════════════ -->
+<!-- ═══ ONLINE ══════════════════════════════════════════════════ -->
 <div id="screen-online" class="screen" style="justify-content:center;gap:1.25rem">
   <div class="screen-title">🌐 ONLINE MULTIPLAYER</div>
   <div class="online-panel">
@@ -586,21 +152,16 @@ body{
       <input type="text" class="room-input" id="join-code-input" placeholder="PASTE ROOM CODE...">
       <button class="btn btn-blue btn-sm" onclick="joinRoom()">🚀 JOIN</button>
     </div>
-
-    <!-- Room code + invite link -->
     <div class="room-code-wrap" id="room-code-wrap">
       <div class="room-code-lbl">YOUR ROOM CODE — SHARE WITH FRIENDS</div>
       <div class="room-code-val" id="room-code-val">——</div>
       <div class="room-code-hint">Up to 8 players</div>
-      <!-- NEW: copy-invite-link button -->
       <div class="invite-link-wrap" id="invite-link-wrap">
         <button class="invite-copy-btn" onclick="copyInviteLink()">📋 COPY INVITE LINK</button>
       </div>
     </div>
-
     <div class="online-status" id="online-status">Ready to connect</div>
   </div>
-
   <div class="lobby-wrap" id="lobby-wrap">
     <div class="lobby-heading">LOBBY</div>
     <div class="lobby-grid" id="lobby-grid"></div>
@@ -613,13 +174,13 @@ body{
   <button class="btn btn-gray" onclick="showScreen('menu')">⬅ BACK</button>
 </div>
 
-<!-- ═══ COUNTDOWN ══════════════════════════════════════════ -->
+<!-- ═══ COUNTDOWN ══════════════════════════════════════════════ -->
 <div id="screen-countdown" class="screen">
   <div id="countdown-display" class="countdown-num"></div>
   <div class="countdown-char" id="countdown-char"></div>
 </div>
 
-<!-- ═══ RACE ═══════════════════════════════════════════════ -->
+<!-- ═══ RACE ════════════════════════════════════════════════════ -->
 <div id="screen-race" class="screen">
   <div class="track-wrap">
     <div class="track-title-row">
@@ -629,7 +190,6 @@ body{
     <div id="track-lanes"></div>
   </div>
 
-  <!-- Race stats -->
   <div class="stats-panel">
     <div class="stat-group">
       <div class="stat-num" id="stat-wpm">0</div>
@@ -651,17 +211,17 @@ body{
     </div>
   </div>
 
-  <!-- Timer bar -->
   <div class="race-timer-wrap">
     <div class="race-timer-label" id="race-timer-label">TIME LEFT: —</div>
     <div class="race-timer-bar-outer">
       <div class="race-timer-bar-inner" id="race-timer-bar" style="width:100%"></div>
     </div>
-    <!-- Exit race button — always visible, small and unobtrusive -->
-    <button class="btn btn-gray btn-sm" style="flex-shrink:0;font-size:.45rem;padding:.35rem .7rem;min-width:0" onclick="confirmExitRace()">✕ QUIT</button>
+    <button
+      class="btn btn-gray btn-sm"
+      style="flex-shrink:0;font-size:.45rem;padding:.35rem .7rem;min-width:0"
+      onclick="confirmExitRace()">✕ QUIT</button>
   </div>
 
-  <!-- Typing area -->
   <div id="typing-panel" class="typing-panel" onclick="focusTyping()">
     <div id="race-text" class="race-text-wrap"></div>
     <div class="progress-outer">
@@ -670,1432 +230,70 @@ body{
     <div class="focus-bar">
       <div id="focus-indicator" class="focus-indicator">👆 Click here to start typing!</div>
     </div>
-    <textarea id="real-input" class="real-input"
-      autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-      onfocus="onTypingFocus()" onblur="onTypingBlur()"
+    <textarea
+      id="real-input"
+      class="real-input"
+      autocomplete="off"
+      autocorrect="off"
+      autocapitalize="off"
+      spellcheck="false"
+      onfocus="onTypingFocus()"
+      onblur="onTypingBlur()"
       oninput="onTextareaInput(event)"
       onkeydown="onTypingKeydown(event)"></textarea>
   </div>
 </div>
 
-<!-- ═══ RESULTS ════════════════════════════════════════════ -->
+<!-- ═══ RESULTS ═════════════════════════════════════════════════ -->
 <div id="screen-results" class="screen">
   <div class="results-title" id="results-title">🏆 RACE OVER!</div>
   <div class="podium" id="podium"></div>
   <div class="results-list" id="results-list"></div>
-  <div id="pb-banner" style="display:none;font-size:.6rem;color:#ffd700;text-align:center;background:#1a1800;border:2px solid #ffd700;border-radius:6px;padding:.6rem 1rem;max-width:400px;width:100%"></div>
-  <!-- Online: shown while waiting for all players to finish -->
-  <div id="results-waiting-banner" style="display:none;font-size:.55rem;color:#4a9fe0;text-align:center;background:#0a1422;border:2px solid #1a6eb5;border-radius:6px;padding:.6rem 1rem;max-width:400px;width:100%;line-height:2">
+  <div
+    id="pb-banner"
+    style="display:none;font-size:.6rem;color:#ffd700;text-align:center;background:#1a1800;border:2px solid #ffd700;border-radius:6px;padding:.6rem 1rem;max-width:400px;width:100%">
+  </div>
+  <div
+    id="results-waiting-banner"
+    style="display:none;font-size:.55rem;color:#4a9fe0;text-align:center;background:#0a1422;border:2px solid #1a6eb5;border-radius:6px;padding:.6rem 1rem;max-width:400px;width:100%;line-height:2">
     ⏳ Waiting for other players to finish...
   </div>
   <div class="row" style="margin-top:.75rem">
-    <button class="btn btn-gold" id="results-race-again-btn" onclick="playAgain()">🔄 RACE AGAIN</button>
-    <button class="btn btn-green btn-sm" onclick="gotoStats()">📊 STATS</button>
-    <button class="btn" onclick="showScreen('menu')">🏠 MENU</button>
-    <!-- Online only: leave without waiting -->
+    <button class="btn btn-gold"       id="results-race-again-btn" onclick="playAgain()">🔄 RACE AGAIN</button>
+    <button class="btn btn-green btn-sm"                           onclick="gotoStats()">📊 STATS</button>
+    <button class="btn"                                            onclick="showScreen('menu')">🏠 MENU</button>
     <button class="btn btn-gray btn-sm" id="results-leave-btn" style="display:none" onclick="leaveOnlineRace()">✕ LEAVE</button>
   </div>
 </div>
 
-<script>
-/* ═══════════════════════════════════════════════════════════════
-   TURBO TYPE RACERS — Original Characters Edition
-   v2.0: QA fixes + multiplayer overhaul + match timer + SPACE item
-   ═══════════════════════════════════════════════════════════════ */
+<!--
+  ═══ SCRIPT LOAD ORDER ══════════════════════════════════════════
+  Order matters — each file depends on the ones above it.
+  Do NOT reorder without checking the dependency chain.
+
+  1. state.js     — G object + all constants. Must be first.
+  2. audio.js     — SFX, tone(), noise(). Needs nothing.
+  3. ui.js        — DOM helpers, render. Needs G.
+  4. characters.js— char grid, unlock system. Needs G, SFX, ui.
+  5. items.js     — powerup effects. Needs G, SFX.
+  6. typing.js    — input handling. Needs G, SFX, ui (setCharClass lives in typing).
+  7. stats.js     — localStorage stats. Needs G, SFX, characters (unlock check).
+  8. customtext.js— F010. Needs G, SFX, ui, race (startRace chain).
+  9. online.js    — PeerJS multiplayer. Needs G, ui, race, stats.
+  10. race.js     — game loop. Needs everything above.
+  11. main.js     — init, navigation. Needs everything. Always last.
+-->
+<script src="js/state.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/characters.js"></script>
+<script src="js/items.js"></script>
+<script src="js/typing.js"></script>
+<script src="js/stats.js"></script>
+<script src="js/customtext.js"></script>
+<script src="js/online.js"></script>
+<script src="js/race.js"></script>
+<script src="js/main.js"></script>
 
-// ── CHARACTERS ───────────────────────────────────────────────
-const CHARS = [
-  { id:'lionel',     name:'LIONEL',  title:'The Dribble King',  emoji:'⚽', color:'#3a86ff', kart:'#1a5ab8', bg:'#0a1e4a', trait:'🔵 "Precise. Always on target."',     traitColor:'#3a86ff', stats:{spd:9,acc:9,hdl:8}  },
-  { id:'jordan',     name:'JORDAN',  title:'Air Supremacy',     emoji:'🏀', color:'#e63946', kart:'#9b1a22', bg:'#3a0a0a', trait:'🔴 "Nobody tells me no."',             traitColor:'#e63946', stats:{spd:10,acc:7,hdl:8} },
-  { id:'alessandro', name:'SANDRO',  title:'The Maestro',       emoji:'🎻', color:'#8338ec', kart:'#4a1a8a', bg:'#1a0a3a', trait:'🟣 "Every keystroke is a note."',      traitColor:'#8338ec', stats:{spd:7,acc:10,hdl:9} },
-  { id:'kwan',       name:'KWAN',    title:'Ice & Fire',        emoji:'⛸️', color:'#06d6a0', kart:'#037a5c', bg:'#021a14', trait:'🟢 "Graceful. Ruthless. Fast."',       traitColor:'#06d6a0', stats:{spd:8,acc:9,hdl:10} },
-  { id:'john',       name:'JOHN',    title:'The Everyman',      emoji:'🔧', color:'#fb8500', kart:'#a85200', bg:'#2a1400', trait:'🟠 "Built different. Works harder."',  traitColor:'#fb8500', stats:{spd:7,acc:8,hdl:8}  },
-  { id:'shin',       name:'SHIN',    title:'Cyber Ronin',       emoji:'⚔️', color:'#ef233c', kart:'#8a0f1e', bg:'#2a0008', trait:'🗡️ "Strike once. Strike true."',      traitColor:'#ef233c', stats:{spd:9,acc:8,hdl:7}  },
-  { id:'ian',        name:'IAN',     title:'The Strategist',    emoji:'🧠', color:'#48cae4', kart:'#1a7a9a', bg:'#021820', trait:'🔷 "Three moves ahead, always."',     traitColor:'#48cae4', stats:{spd:6,acc:10,hdl:9} },
-  { id:'jason',      name:'JASON',   title:'The Wildcard',      emoji:'🃏', color:'#ffd700', kart:'#9a7a00', bg:'#1a1400', trait:'🃏 "Rules? What rules?"',              traitColor:'#ffd700', stats:{spd:8,acc:6,hdl:10} },
-];
-
-// ── ITEMS ────────────────────────────────────────────────────
-const ITEMS = [
-  { id:'nitro',     name:'NITRO',     emoji:'🚀', desc:'Speed boost for 5 seconds!',    eff:'nitro',     dur:5000 },
-  { id:'overdrive', name:'OVERDRIVE', emoji:'⭐', desc:'Maximum speed for 8 seconds!',  eff:'overdrive', dur:8000 },
-  { id:'magnet',    name:'MAGNET',    emoji:'🧲', desc:'Pulls you toward the leader!',  eff:'magnet',    dur:4000 },
-  { id:'missile',   name:'MISSILE',   emoji:'🎯', desc:'Hits the kart directly ahead!', eff:'missile',   dur:3000 },
-  { id:'emp',       name:'EMP BLAST', emoji:'⚡', desc:'Slows ALL opponents for 4s!',   eff:'emp',       dur:4000 },
-  { id:'oilslick',  name:'OIL SLICK', emoji:'🛢️', desc:'Trips the kart behind you!',   eff:'oilslick',  dur:3000 },
-];
-
-const ITEM_BOX_POS = [25, 50, 75];
-
-// ── LONGER TEXTS for 3+ min races ────────────────────────────
-// These are long enough that even a 100 WPM typist takes 3+ minutes.
-const TEXTS = [
-  "The quick brown fox jumps over the lazy dog near the riverbank every single morning before sunrise. Pack my box with five dozen liquor jugs and send them across the mountain pass before the storm arrives tonight. How vexingly quick daft zebras jump when startled by the sound of distant thunder rolling through the valley. The wind carried the scent of pine and rain across the open field where the horses grazed quietly in the afternoon. Every great story begins with a single word written in courage and finished with the wisdom gained along the way.",
-  "It was the best of times it was the worst of times it was the age of wisdom it was the age of foolishness it was the epoch of belief it was the epoch of incredulity and it was the season of light and the season of darkness. We had everything before us we had nothing before us we were all going direct to heaven we were all going direct the other way and the noisiest authorities insisted on its being received for good or for evil in the superlative degree of comparison only.",
-  "To be or not to be that is the question whether tis nobler in the mind to suffer the slings and arrows of outrageous fortune or to take arms against a sea of troubles and by opposing end them. To die to sleep no more and by a sleep to say we end the heartache and the thousand natural shocks that flesh is heir to. Tis a consummation devoutly to be wished to die to sleep to sleep perchance to dream and in that sleep of death what dreams may come.",
-  "All human beings are born free and equal in dignity and rights and should act towards one another in a spirit of brotherhood and mutual respect. Success is not final failure is not fatal it is the courage to continue that counts in every endeavor we undertake with purpose and determination. Every champion was once a contender who refused to quit when the odds were stacked against them and the crowd had turned away. The road to success is always under construction and the detours along the way are part of the journey that shapes who we become.",
-  "In the beginning there was nothing which exploded outward into the vast cosmos that we now call home. The only way to do great work is to love what you do with every fiber of your being and never settle for anything less than your best. Life is what happens when you are busy making other plans and the most important moments often arrive without warning or invitation. In the middle of every difficulty lies opportunity waiting patiently for the person bold enough to reach out and take it with both hands firmly.",
-  "The secret of getting ahead is getting started and the secret of getting started is breaking your complex overwhelming tasks into small manageable steps and then beginning on the first one immediately without hesitation. Believe you can and you are halfway there already because the mind is the most powerful tool any human being possesses and it shapes every outcome we experience in this life. You are never too old to set another goal or to dream a new dream because the capacity for growth lives within each one of us until our very last breath.",
-  "Knowledge is power and the more you learn the more you realize how much there still is left to discover in this endlessly fascinating universe. The greatest glory in living lies not in never falling but in rising every time we fall because resilience is the true measure of character in any person. In three words I can sum up everything I have learned about life: it goes on regardless of whether we are ready for the next chapter to begin or not.",
-  "Technology is best when it brings people together across the vast distances that once separated families and communities and cultures from one another. The future belongs to those who believe in the beauty of their dreams and who wake up every single day prepared to work toward making those dreams a living reality. Do not go where the path may lead instead go where there is no path and leave a trail for those who will follow in your footsteps long after you are gone from this world.",
-];
-
-// ── BOT DIFFICULTY — QA FIX: easier speeds ───────────────────
-// easy: 35-45 WPM, medium: 55-65 WPM, hard: 90-110 WPM
-const DIFFICULTIES = {
-  easy:   { min:35, max:45,  variance:.20 },
-  medium: { min:55, max:65,  variance:.18 },
-  hard:   { min:90, max:110, variance:.15 },
-};
-
-const PLACE_LABELS  = ['1ST','2ND','3RD','4TH'];
-const PLACE_CLASSES = ['p1','p2','p3','p4'];
-
-// ── STATE ────────────────────────────────────────────────────
-const G = {
-  screen:'menu', mode:'ai', selectedChar:null, difficulty:'medium',
-  // CEO FIX: match duration in seconds (default 5 min)
-  matchDuration:300,
-  _returnToOnline: false,
-  raceText:'', charStates:[], cursorPos:0, correctChars:0, totalTyped:0,
-  wpm:0, accuracy:100, position:0,
-  finished:false, finishTime:null,
-  customText: null, // F010: holds custom text when set
-  heldItem:null, speedMult:1.0, slowed:false, boosted:false, collectedBoxes:[],
-  bots:[], raceStartTime:null, raceLastFrame:null, raceRafId:null, elapsedTimer:null,
-  finishOrder:[], onlinePlayers:{}, peer:null, connections:[], isHost:false, myPeerId:null,
-};
-
-// ── AUDIO ────────────────────────────────────────────────────
-let _ctx=null, muted=false;
-function ctx(){if(!_ctx)_ctx=new(window.AudioContext||window.webkitAudioContext)();if(_ctx.state==='suspended')_ctx.resume();return _ctx;}
-function toggleMute(){muted=!muted;document.getElementById('mute-btn').textContent=muted?'🔇 SFX':'🔊 SFX';}
-function tone(freq,type,vol,dur,t0=0){if(muted)return;try{const a=ctx(),n=a.currentTime,o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.type=type;o.frequency.value=freq;g.gain.setValueAtTime(0,n+t0);g.gain.linearRampToValueAtTime(vol,n+t0+.005);g.gain.exponentialRampToValueAtTime(.0001,n+t0+dur);o.start(n+t0);o.stop(n+t0+dur+.05);}catch(e){}}
-function noise(vol,dur,t0=0,freq=600){if(muted)return;try{const a=ctx(),n=a.currentTime,buf=a.createBuffer(1,Math.ceil(a.sampleRate*(dur+.05)),a.sampleRate),d=buf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;const src=a.createBufferSource(),g=a.createGain(),f=a.createBiquadFilter();f.type='bandpass';f.frequency.value=freq;f.Q.value=1;src.buffer=buf;src.connect(f);f.connect(g);g.connect(a.destination);g.gain.setValueAtTime(vol,n+t0);g.gain.exponentialRampToValueAtTime(.0001,n+t0+dur);src.start(n+t0);src.stop(n+t0+dur+.06);}catch(e){}}
-const SFX={
-  correct(){tone(1100,'sine',.06,.055);},
-  error(){tone(160,'sawtooth',.15,.1);noise(.06,.08,0,300);},
-  coin(){tone(1046,'sine',.18,.06);tone(1318,'sine',.16,.07,.07);tone(1568,'sine',.22,.15,.14);},
-  item(){tone(440,'square',.13,.05);tone(660,'square',.15,.08,.07);tone(880,'square',.18,.12,.15);},
-  boost(){[300,380,480,600,750].forEach((f,i)=>tone(f,'sine',.14,.1,i*.05));},
-  star(){[523,659,784,1047,784,1047,1318].forEach((f,i)=>tone(f,'square',.12,.1,i*.07));},
-  hit(){tone(220,'sawtooth',.22,.06);noise(.18,.22,0,500);tone(110,'sawtooth',.16,.2,.07);},
-  slow(){[440,370,300,230].forEach((f,i)=>tone(f,'sawtooth',.14,.1,i*.06));},
-  beep(hi){tone(hi?880:440,'square',.2,.18);},
-  go(){[523,659,784,1047].forEach((f,i)=>tone(f,'square',.2,.12,i*.09));},
-  finish(){[523,523,523,523,415,466,523,784].forEach((f,i)=>tone(f,'square',.2,.15,i*.12));},
-  winner(){[784,784,784,659,784,880,988,1047].forEach((f,i)=>tone(f,'sine',.22,.18,i*.1));},
-  select(){tone(660,'square',.15,.08);tone(880,'square',.14,.1,.09);},
-};
-
-// ── INIT ─────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  createStars();
-  buildCharGrid();
-  handleInviteLinkOnLoad();  // auto-fill room code if URL has ?join=...
-  // SPACE bar = use item (replaces TAB)
-  document.addEventListener('keydown', e => {
-    if (e.code === 'Space' && G.screen === 'race') {
-      // Only intercept SPACE if typing panel is NOT focused
-      // (we detect that via the real-input focus state)
-      const inp = document.getElementById('real-input');
-      if (document.activeElement !== inp) {
-        e.preventDefault();
-        useItem();
-      }
-    }
-  });
-});
-
-function createStars(){
-  const c=document.getElementById('stars');
-  for(let i=0;i<80;i++){
-    const s=document.createElement('div');s.className='star';
-    const sz=Math.random()*2.5+.5;
-    s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*4}s;--del:${Math.random()*4}s`;
-    c.appendChild(s);
-  }
-}
-
-function buildCharGrid(){
-  // Initial build on DOMContentLoaded — just builds empty shells, rebuildCharGrid fills them
-  rebuildCharGrid();
-}
-
-// Called whenever mode changes or stats change, rebuilds grid with correct unlock/locked state
-function rebuildCharGrid(){
-  const grid = document.getElementById('char-grid');
-  if(!grid) return;
-  grid.innerHTML = '';
-  const stats = loadStats();
-  CHARS.forEach(ch => {
-    const unlocked = isCharUnlocked(ch.id, stats);
-    const card = document.createElement('div');
-    card.className = 'char-card' + (unlocked ? '' : ' locked');
-    card.id = 'char-' + ch.id;
-    if(unlocked){
-      card.onclick = () => selectChar(ch.id);
-    }
-    const bar = v => `<div class="stat-bar"><div class="stat-fill" style="width:${v*10}%;background:${ch.color}"></div></div>`;
-    const lockReq = unlocked ? '' : `
-      <div class="char-lock-overlay">
-        <div class="char-lock-icon">🔒</div>
-        <div class="char-lock-req">${getUnlockRequirement(ch.id)}</div>
-      </div>`;
-    card.innerHTML = `
-      <div class="char-avatar" style="background:${ch.bg};border-color:${ch.color}33"><span>${unlocked ? ch.emoji : '❓'}</span></div>
-      <div class="char-name">${unlocked ? ch.name : '???'}</div>
-      <div class="char-title" style="color:${unlocked ? ch.traitColor : '#555'}">${unlocked ? ch.title : 'LOCKED'}</div>
-      <div class="char-stats">
-        <div class="stat-row"><span class="stat-lbl">SPD</span>${bar(unlocked ? ch.stats.spd : 0)}</div>
-        <div class="stat-row"><span class="stat-lbl">ACC</span>${bar(unlocked ? ch.stats.acc : 0)}</div>
-        <div class="stat-row"><span class="stat-lbl">HDL</span>${bar(unlocked ? ch.stats.hdl : 0)}</div>
-      </div>
-      <div class="char-trait" style="color:${unlocked ? ch.traitColor : '#444'};background:${unlocked ? ch.bg : '#0a0a0a'}">${unlocked ? ch.trait : '🔒 Win races to unlock'}</div>
-      ${lockReq}`;
-    // Restore selected highlight if this char was already chosen
-    if(G.selectedChar?.id === ch.id && unlocked) card.classList.add('selected');
-    grid.appendChild(card);
-  });
-}
-
-// ── NAVIGATION ───────────────────────────────────────────────
-function showScreen(name){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById('screen-'+name).classList.add('active');
-  G.screen=name;
-}
-
-// Show/hide AI-only sections based on mode, and rebuild char grid with unlock state
-function updateCharScreenForMode(){
-  const isOnline = G.mode === 'online';
-  document.querySelectorAll('.ai-only').forEach(el => el.classList.toggle('hidden', isOnline));
-  const subtitle = document.getElementById('char-screen-subtitle');
-  if(subtitle){
-    subtitle.style.display = isOnline ? 'block' : 'none';
-    subtitle.textContent = isOnline ? '🌐 Online mode — pick your racer, then confirm.' : '';
-  }
-  rebuildCharGrid();
-}
-
-// Smart back from char screen
-function charScreenBack(){
-  if(G._returnToOnline){ G._returnToOnline = false; showScreen('online'); }
-  else { showScreen('menu'); }
-}
-
-function startVsAI(){
-  SFX.select(); ctx();
-  G.mode='ai'; G._returnToOnline=false; G.selectedChar=null;
-  const b=document.getElementById('race-btn'); b.disabled=true; b.textContent='SELECT A RACER FIRST';
-  updateCharScreenForMode();
-  showScreen('character');
-}
-
-function gotoOnlineMenu(){ SFX.select(); G.mode='online'; showScreen('online'); }
-function gotoHowToPlay(){ SFX.select(); showScreen('howto'); }
-
-// Let a player pick/change character from the online lobby
-function pickCharForOnline(){
-  G._returnToOnline=true; G.mode='online';
-  const b=document.getElementById('race-btn');
-  if(G.selectedChar){ b.disabled=false; b.textContent=`▶ CONFIRM ${G.selectedChar.name}`; }
-  else { b.disabled=true; b.textContent='SELECT A RACER FIRST'; }
-  updateCharScreenForMode();
-  showScreen('character');
-}
-
-function selectChar(id){
-  // Guard: don't allow selecting locked characters
-  const stats = loadStats();
-  if(!isCharUnlocked(id, stats)){
-    showNotif(`🔒 ${UNLOCK_LABELS[id] || 'Win more races to unlock!'}`);
-    return;
-  }
-  SFX.coin();
-  G.selectedChar = CHARS.find(c => c.id === id);
-  document.querySelectorAll('.char-card').forEach(c=>c.classList.remove('selected'));
-  document.getElementById('char-'+id).classList.add('selected');
-  const b = document.getElementById('race-btn');
-  b.disabled = false;
-  b.textContent = G._returnToOnline ? `▶ CONFIRM ${G.selectedChar.name}` : `▶ RACE AS ${G.selectedChar.name}!`;
-  // If already in a live online lobby, broadcast our char update immediately
-  if(G.peer && G.connections.length){
-    const msg = { type:'charSelect', name:G.selectedChar.name, emoji:G.selectedChar.emoji, charId:G.selectedChar.id, peerId:G.myPeerId };
-    broadcast(msg);
-    updateLobby();
-  }
-}
-
-function setDiff(d){
-  G.difficulty = d;
-  document.querySelectorAll('.diff-btn').forEach(b=>b.classList.toggle('active',b.dataset.diff===d));
-  SFX.select();
-}
-
-// CEO feature: time-based match duration selector
-function setMatchDuration(secs){
-  G.matchDuration = secs;
-  document.querySelectorAll('.match-cfg-btn').forEach(b=>b.classList.toggle('active',+b.dataset.dur===secs));
-  SFX.select();
-}
-
-// ── RACE SETUP ───────────────────────────────────────────────
-function startRace(){
-  if(!G.selectedChar) return;
-  SFX.select();
-  // If player picked char from online lobby, return to lobby instead of starting solo race
-  if(G._returnToOnline){
-    G._returnToOnline = false;
-    showScreen('online');
-    updateLobby();
-    return;
-  }
-  // F010: use custom text if set, otherwise pick a random built-in text
-  G.raceText = G.customText || TEXTS[Math.floor(Math.random()*TEXTS.length)];
-  G.customText = null; // consume it (one race per custom text)
-  initRaceState();
-  buildTrack();
-  buildRaceText();
-  showScreen('countdown');
-  runCountdown();
-}
-
-function initRaceState(){
-  G.charStates = Array(G.raceText.length).fill('rem');
-  G.cursorPos=0; G.correctChars=0; G.totalTyped=0;
-  G.wpm=0; G.accuracy=100; G.position=0;
-  G.finished=false; G.finishTime=null;
-  G.heldItem=null; G.speedMult=1.0; G.slowed=false; G.boosted=false;
-  G.collectedBoxes=[]; G.finishOrder=[];
-  G.raceStartTime=null; G.raceLastFrame=null;
-  if(G.raceRafId)cancelAnimationFrame(G.raceRafId);
-  if(G.elapsedTimer)clearInterval(G.elapsedTimer);
-  G.raceRafId=null; G.elapsedTimer=null;
-
-  // Online mode: NO bots for anyone — host or joiner.
-  // Everyone races against human players only.
-  if(G.mode === 'online'){
-    G.bots = [];
-    return;
-  }
-
-  const diff = DIFFICULTIES[G.difficulty];
-  // Exclude the player's own character from bots (fallback to any 3 if no char chosen)
-  const pool = G.selectedChar
-    ? CHARS.filter(c => c.id !== G.selectedChar.id)
-    : [...CHARS];
-  const others = shuffle([...pool]).slice(0, 3);
-  G.bots = others.map(ch => ({
-    char:ch, name:ch.name, emoji:ch.emoji,
-    targetWpm: diff.min + Math.random()*(diff.max-diff.min),
-    variance:diff.variance,
-    charsTyped:0, position:0, finished:false, finishTime:null,
-    speedMult:1.0, slowed:false, boosted:false, collectedBoxes:[]
-  }));
-}
-
-function buildTrack(){
-  const c = document.getElementById('track-lanes');
-  c.innerHTML = '';
-  const racers = [
-    { id:'player', name:G.selectedChar.name, emoji:G.selectedChar.emoji, color:G.selectedChar.kart, init:G.selectedChar.name[0] },
-    ...G.bots.map(b=>({id:b.char.id, name:b.name, emoji:b.emoji, color:b.char.kart, init:b.name[0]}))
-  ];
-  racers.forEach(r => {
-    const w = document.createElement('div'); w.className='lane-wrap';
-    w.innerHTML = `<div class="lane">
-      <div class="lane-info"><div class="lane-char">${r.emoji}</div><div class="lane-name">${r.name}</div></div>
-      <div class="lane-track" id="lanetrack-${r.id}">
-        ${ITEM_BOX_POS.map((p,j)=>`<div class="item-box-track" id="ibox-${r.id}-${j}" style="left:calc(${p}% - 11px)">📦</div>`).join('')}
-        <div class="kart" id="kart-${r.id}" style="left:2%">
-          <div class="kart-body" style="background:${r.color}"><span class="kart-init">${r.init}</span></div>
-        </div>
-        <span class="finish-flag-icon">🏁</span>
-      </div></div>`;
-    c.appendChild(w);
-  });
-}
-
-function buildRaceText(){
-  const el = document.getElementById('race-text');
-  el.innerHTML = G.raceText.split('').map((ch,i) => {
-    const cls = i===0?'ch-cur':'ch-rem';
-    const d = ch===' '?'&nbsp;':ch==='<'?'&lt;':ch==='>'?'&gt;':ch==='&'?'&amp;':ch;
-    return `<span id="rc-${i}" class="${cls}">${d}</span>`;
-  }).join('');
-}
-
-// ── COUNTDOWN ────────────────────────────────────────────────
-function runCountdown(){
-  const disp = document.getElementById('countdown-display');
-  const cchar = document.getElementById('countdown-char');
-  let n = 3;
-  function tick(){
-    disp.className='countdown-num'; void disp.offsetWidth;
-    if(n>0){
-      disp.textContent=n; disp.classList.add('cd-'+n);
-      cchar.textContent = G.selectedChar ? `${G.selectedChar.emoji} ${G.selectedChar.name}` : '';
-      SFX.beep(false); n--; setTimeout(tick,950);
-    } else {
-      disp.textContent='GO!'; disp.classList.add('cd-go');
-      cchar.textContent='⌨️ START TYPING!'; SFX.go(); setTimeout(beginRace,850);
-    }
-  }
-  tick();
-}
-
-function beginRace(){
-  showScreen('race');
-  G.raceStartTime = performance.now();
-  G.raceLastFrame = G.raceStartTime;
-  updateItemDisplay();
-  const inp = document.getElementById('real-input');
-  inp.value=''; inp.disabled=false;
-  setTimeout(()=>inp.focus(),80);
-  G.raceRafId = requestAnimationFrame(gameLoop);
-  G.elapsedTimer = setInterval(updateElapsed, 500);
-}
-
-// ── GAME LOOP ─────────────────────────────────────────────────
-function gameLoop(now){
-  if(G.screen!=='race') return;
-  const elapsed = (now-G.raceStartTime)/1000;
-  const dt = Math.min((now-G.raceLastFrame)/1000, .1);
-  G.raceLastFrame = now;
-
-  if(!G.finished){
-    G.wpm = elapsed>1 ? Math.round((G.correctChars/5)/(elapsed/60)) : 0;
-    G.accuracy = G.totalTyped>0 ? Math.round((G.correctChars/G.totalTyped)*100) : 100;
-    G.position = (G.cursorPos/G.raceText.length)*100;
-    ITEM_BOX_POS.forEach((pos,i) => {
-      if(!G.collectedBoxes.includes(i) && G.position>=pos && !G.heldItem){
-        G.collectedBoxes.push(i);
-        G.heldItem = ITEMS[Math.floor(Math.random()*ITEMS.length)];
-        SFX.coin(); showNotif(`${G.heldItem.emoji} Got ${G.heldItem.name}! SPACE to use.`);
-        markBoxUsed('player',i); updateItemDisplay();
-      }
-    });
-    setKartPos('player', Math.min(G.position,99));
-    setKartFX('player', G.boosted, G.slowed);
-    updateStatsBar(); updatePlaceBadge();
-  }
-
-  G.bots.forEach(bot => {
-    if(bot.finished) return;
-    const w = bot.targetWpm * bot.speedMult * (1-bot.variance/2+Math.random()*bot.variance);
-    bot.charsTyped += (w*5/60)*dt;
-    bot.position = Math.min(100,(bot.charsTyped/G.raceText.length)*100);
-    ITEM_BOX_POS.forEach((pos,j) => {
-      if(!bot.collectedBoxes.includes(j) && bot.position>=pos){
-        bot.collectedBoxes.push(j); markBoxUsed(bot.char.id,j);
-        const item = ITEMS[Math.floor(Math.random()*ITEMS.length)];
-        setTimeout(()=>applyBotItem(bot,item), 400+Math.random()*800);
-      }
-    });
-    if(bot.position>=100 && !bot.finished){
-      bot.finished=true; bot.finishTime=elapsed;
-      G.finishOrder.push({id:bot.char.id,name:bot.name,emoji:bot.emoji,isPlayer:false,time:elapsed,wpm:Math.round(bot.targetWpm)});
-    }
-    setKartPos(bot.char.id, Math.min(bot.position,99));
-    setKartFX(bot.char.id, bot.boosted, bot.slowed);
-  });
-
-  if(G.mode==='online') broadcastProgress();
-
-  // Update timer bar
-  updateTimerBar(elapsed);
-
-  // End condition:
-  // - AI mode: all racers (player + bots) finished OR time up
-  // - Online mode: player finished + time up, OR just time up. Don't wait for all humans.
-  const timeUp = elapsed >= G.matchDuration;
-  const botsAllDone = G.bots.every(b => b.finished);
-  const playerAndBotsDone = G.finished && botsAllDone;
-
-  if(timeUp || (G.mode !== 'online' && playerAndBotsDone)){
-    endRace(); return;
-  }
-  // Online: end when the local player finishes (don't hold up their results screen)
-  if(G.mode === 'online' && G.finished){
-    endRace(); return;
-  }
-
-  G.raceRafId = requestAnimationFrame(gameLoop);
-}
-
-function updateTimerBar(elapsed){
-  const remaining = Math.max(0, G.matchDuration - elapsed);
-  const pct = (remaining / G.matchDuration) * 100;
-  const bar = document.getElementById('race-timer-bar');
-  const lbl = document.getElementById('race-timer-label');
-  if(bar) bar.style.width = pct + '%';
-  if(lbl) lbl.textContent = 'TIME LEFT: ' + formatTime(remaining);
-  // Turn red when under 30 seconds
-  if(bar) bar.style.background = remaining < 30 ? '#e74c3c' : '#4a9fe0';
-}
-
-// ── TYPING ────────────────────────────────────────────────────
-let lastProcessedLength = 0;
-
-function focusTyping(){ const inp=document.getElementById('real-input'); if(inp)inp.focus(); ctx(); }
-function onTypingFocus(){
-  const ind=document.getElementById('focus-indicator'), panel=document.getElementById('typing-panel');
-  if(ind){ind.classList.add('on');ind.textContent='⌨️ Typing active!';}
-  if(panel)panel.classList.add('focused');
-}
-function onTypingBlur(){
-  const ind=document.getElementById('focus-indicator'), panel=document.getElementById('typing-panel');
-  if(ind){ind.classList.remove('on');ind.textContent='👆 Click here to start typing!';}
-  if(panel)panel.classList.remove('focused');
-}
-
-function onTypingKeydown(e){
-  if(G.screen!=='race'||G.finished||!G.raceStartTime) return;
-  // SPACE key: use item (don't type the space character)
-  if(e.code==='Space' && G.heldItem){
-    e.preventDefault();
-    useItem();
-    const inp=e.target;
-    // Trim the space that just got inserted before we process it
-    inp.value = inp.value.trimEnd();
-    lastProcessedLength = inp.value.length;
-    return;
-  }
-  if(e.key==='Backspace'){
-    e.preventDefault();
-    handleBackspace();
-    const inp=e.target;
-    if(inp.value.length>0) inp.value=inp.value.slice(0,-1);
-    lastProcessedLength=inp.value.length;
-    return;
-  }
-}
-
-function onTextareaInput(e){
-  if(G.screen!=='race'||G.finished||!G.raceStartTime) return;
-  ctx();
-  const inp=e.target, val=inp.value;
-  if(val.length>lastProcessedLength){
-    for(let i=lastProcessedLength;i<val.length;i++){
-      if(G.finished||G.cursorPos>=G.raceText.length) break;
-      handleChar(val[i]);
-    }
-  }
-  lastProcessedLength=val.length;
-  if(val.length>200){ inp.value=val.slice(val.length-100); lastProcessedLength=inp.value.length; }
-}
-
-function handleBackspace(){
-  if(G.charStates[G.cursorPos]==='err'){
-    G.charStates[G.cursorPos]='rem'; setCharClass(G.cursorPos,'cur'); return;
-  }
-  if(G.cursorPos<=0) return;
-  setCharClass(G.cursorPos,'rem');
-  G.cursorPos--;
-  if(G.charStates[G.cursorPos]==='ok') G.correctChars=Math.max(0,G.correctChars-1);
-  G.charStates[G.cursorPos]='rem'; setCharClass(G.cursorPos,'cur');
-}
-
-function handleChar(key){
-  if(G.cursorPos>=G.raceText.length) return;
-  if(G.charStates[G.cursorPos]==='err'){ SFX.error(); return; }
-  const expected=G.raceText[G.cursorPos], isOk=key===expected;
-  G.totalTyped++;
-  if(isOk){
-    G.correctChars++; G.charStates[G.cursorPos]='ok'; setCharClass(G.cursorPos,'ok'); SFX.correct();
-    G.cursorPos++;
-    if(G.cursorPos>=G.raceText.length){ playerFinished(); return; }
-    setCharClass(G.cursorPos,'cur');
-    const el=document.getElementById('rc-'+G.cursorPos);
-    if(el) el.scrollIntoView({block:'nearest',behavior:'smooth'});
-  } else {
-    G.charStates[G.cursorPos]='err'; setCharClass(G.cursorPos,'err'); SFX.error();
-  }
-}
-
-function setCharClass(i,cls){ const el=document.getElementById('rc-'+i); if(el)el.className='ch-'+cls; }
-
-// ── PLAYER FINISH ─────────────────────────────────────────────
-function playerFinished(){
-  G.finished=true; G.position=100;
-  const elapsed=(performance.now()-G.raceStartTime)/1000; G.finishTime=elapsed;
-  setKartPos('player',99);
-  G.finishOrder.push({id:G.selectedChar.id,name:G.selectedChar.name,emoji:G.selectedChar.emoji,isPlayer:true,time:elapsed,wpm:G.wpm});
-  for(let i=G.cursorPos;i<G.raceText.length;i++) setCharClass(i,'ok');
-  const place=G.finishOrder.length;
-  if(place===1){ SFX.winner(); showNotif('🏆 1ST PLACE! WINNER!'); }
-  else { SFX.finish(); showNotif(`🏁 ${PLACE_LABELS[place-1]}! ${formatTime(elapsed)}`); }
-  document.getElementById('real-input').disabled=true;
-}
-
-// ── END RACE ──────────────────────────────────────────────────
-function endRace(){
-  cancelAnimationFrame(G.raceRafId);
-  clearInterval(G.elapsedTimer);
-  const elapsed=(performance.now()-G.raceStartTime)/1000;
-  if(!G.finished){
-    G.finished=true; G.finishTime=elapsed;
-    G.finishOrder.push({id:G.selectedChar.id,name:G.selectedChar.name,emoji:G.selectedChar.emoji,isPlayer:true,time:elapsed,wpm:G.wpm});
-  }
-  G.bots.forEach(b => {
-    if(!b.finished){
-      b.finished=true; b.finishTime=elapsed;
-      G.finishOrder.push({id:b.char.id,name:b.name,emoji:b.emoji,isPlayer:false,time:elapsed,wpm:Math.round(b.targetWpm)});
-    }
-  });
-  G.finishOrder.sort((a,b)=>a.time-b.time);
-  setTimeout(showResults, 1400);
-}
-
-function showResults(){
-  showScreen('results');
-  const pi = G.finishOrder.findIndex(f=>f.isPlayer);
-  const words = ['🏆 WINNER!','🥈 2ND PLACE','🥉 3RD PLACE','4TH PLACE','5TH PLACE','6TH PLACE','7TH PLACE','8TH PLACE'];
-  document.getElementById('results-title').textContent = `${G.selectedChar.emoji} ${words[Math.min(pi, words.length-1)]}`;
-  buildPodium(); buildResultsList(); launchFireworks(pi);
-  pi===0 ? SFX.winner() : SFX.finish();
-  // F009: record stats and show PB banner
-  const pbs = recordRaceStats(G.wpm, G.accuracy, pi);
-  if(pbs) showPBBanner(pbs.pbWpm, pbs.pbAcc);
-
-  // Online: show waiting banner + leave button
-  // Others may still be racing — they don't need to wait for us
-  const waitBanner = document.getElementById('results-waiting-banner');
-  const leaveBtn   = document.getElementById('results-leave-btn');
-  const againBtn   = document.getElementById('results-race-again-btn');
-  if(G.mode === 'online'){
-    waitBanner.style.display = 'block';
-    leaveBtn.style.display   = 'inline-block';
-    againBtn.style.display   = 'none'; // can't restart mid-session as non-host
-  } else {
-    waitBanner.style.display = 'none';
-    leaveBtn.style.display   = 'none';
-    againBtn.style.display   = 'inline-block';
-  }
-}
-
-function buildPodium(){
-  const p=document.getElementById('podium'); p.innerHTML='';
-  const o=G.finishOrder.slice(0,3);
-  [o[1],o[0],o[2]].filter(Boolean).forEach((r,di) => {
-    const rp=G.finishOrder.indexOf(r);
-    const col=document.createElement('div'); col.className='pod-col';
-    col.innerHTML=`<div class="pod-emoji ${['second','','third'][di]}" style="--del:${di*.15}s">${r.emoji}</div>
-      <div class="pod-name">${r.name}${r.isPlayer?'<br><span style="color:#ffd700">(YOU)</span>':''}</div>
-      <div class="pod-time">${formatTime(r.time)}</div><div class="pod-wpm">${r.wpm} WPM</div>
-      <div class="pod-block pod-${rp+1}">${PLACE_LABELS[rp]}</div>`;
-    p.appendChild(col);
-  });
-}
-
-function buildResultsList(){
-  document.getElementById('results-list').innerHTML=G.finishOrder.map((r,i)=>`
-    <div class="res-row">
-      <span class="res-place">${PLACE_LABELS[i]}</span>
-      <span class="res-emoji">${r.emoji}</span>
-      <span class="res-name">${r.name}${r.isPlayer?'<span class="res-you">YOU</span>':''}</span>
-      <span class="res-time">${formatTime(r.time)}</span>
-      <span class="res-wpm">${r.wpm} WPM</span>
-    </div>`).join('');
-}
-
-function launchFireworks(place){
-  const emojis=['🎆','🎇','✨','🎉','🌟','💥','🎊'];
-  const count=Math.max(3,10-place*2);
-  for(let i=0;i<count;i++){
-    setTimeout(()=>{
-      const fw=document.createElement('div'); fw.className='fw';
-      fw.style.cssText=`left:${10+Math.random()*80}vw;top:${10+Math.random()*60}vh;--fy:${-(60+Math.random()*80)}px;--fy2:${-(130+Math.random()*100)}px`;
-      fw.textContent=emojis[Math.floor(Math.random()*emojis.length)];
-      document.body.appendChild(fw); setTimeout(()=>fw.remove(),2500);
-    }, i*160);
-  }
-}
-
-// ── ITEMS ─────────────────────────────────────────────────────
-function useItem(){
-  if(!G.heldItem||G.screen!=='race') return;
-  const item=G.heldItem; G.heldItem=null; updateItemDisplay(); SFX.item(); applyItemEffect(item,true); showSplash(item);
-}
-
-function applyItemEffect(item,isPlayer){
-  const slowPlayer=(mult,dur)=>{G.slowed=true;G.speedMult=mult;SFX.hit();SFX.slow();setTimeout(()=>{G.slowed=false;G.speedMult=1;},dur);};
-  switch(item.eff){
-    case'nitro':if(isPlayer){G.speedMult=1.5;G.boosted=true;SFX.boost();setTimeout(()=>{G.speedMult=1;G.boosted=false;},item.dur);}break;
-    case'overdrive':if(isPlayer){G.speedMult=2.2;G.boosted=true;SFX.star();setTimeout(()=>{G.speedMult=1;G.boosted=false;},item.dur);}break;
-    case'magnet':{
-      if(isPlayer){G.speedMult=1.8;G.boosted=true;SFX.boost();setTimeout(()=>{G.speedMult=1;G.boosted=false;},item.dur);}
-      else slowPlayer(.3,item.dur);
-      break;
-    }
-    case'missile':{
-      if(isPlayer){const ah=G.bots.filter(b=>!b.finished&&b.position>G.position).sort((a,b)=>a.position-b.position)[0];if(ah){ah.slowed=true;ah.speedMult=.35;SFX.hit();setTimeout(()=>{ah.slowed=false;ah.speedMult=1;},item.dur);}}
-      else if(G.position>0) slowPlayer(.35,item.dur);
-      break;
-    }
-    case'emp':
-      if(isPlayer){G.bots.filter(b=>!b.finished).forEach(b=>{b.slowed=true;b.speedMult=.45;setTimeout(()=>{b.slowed=false;b.speedMult=1;},item.dur);});SFX.hit();}
-      else slowPlayer(.45,item.dur);
-      break;
-    case'oilslick':{
-      if(isPlayer){const beh=G.bots.filter(b=>!b.finished&&b.position<G.position).sort((a,b)=>b.position-a.position)[0];if(beh){beh.slowed=true;beh.speedMult=.55;SFX.hit();setTimeout(()=>{beh.slowed=false;beh.speedMult=1;},item.dur);}}
-      else if(G.position>0) slowPlayer(.55,item.dur);
-      break;
-    }
-  }
-}
-
-function applyBotItem(bot,item){
-  if(['magnet','missile','emp','oilslick'].includes(item.eff)) applyItemEffect(item,false);
-  else { bot.speedMult=1.45; bot.boosted=true; setTimeout(()=>{bot.speedMult=1;bot.boosted=false;},item.dur); }
-}
-
-function markBoxUsed(rid,idx){ const el=document.getElementById(`ibox-${rid}-${idx}`); if(el)el.classList.add('used'); }
-function updateItemDisplay(){
-  const s=document.getElementById('item-slot'); if(!s) return;
-  if(G.heldItem){ s.className='item-slot'; s.textContent=G.heldItem.emoji; s.title=G.heldItem.name+' — '+G.heldItem.desc; }
-  else { s.className='item-slot empty'; s.textContent='ITEM'; s.title='No item'; }
-}
-
-// ── RENDER HELPERS ────────────────────────────────────────────
-function setKartPos(id,pct){ const k=document.getElementById('kart-'+id); if(k)k.style.left=Math.min(97,Math.max(2,pct))+'%'; }
-function setKartFX(id,b,s){ const k=document.getElementById('kart-'+id); if(!k)return; k.classList.toggle('boosted',b); k.classList.toggle('slowed',s); }
-function updateStatsBar(){ document.getElementById('stat-wpm').textContent=G.wpm; document.getElementById('stat-acc').textContent=G.accuracy+'%'; document.getElementById('progress-bar').style.width=G.position.toFixed(1)+'%'; }
-function updatePlaceBadge(){
-  const onlineRacers = Object.entries(G.onlinePlayers).map(([pid, p]) => ({ id:pid, pos:p.position }));
-  const all = [
-    { id:'player', pos:G.position },
-    ...G.bots.map(b=>({ id:b.char.id, pos:b.position })),
-    ...onlineRacers,
-  ].sort((a,b) => b.pos - a.pos);
-  const pi = all.findIndex(p => p.id === 'player');
-  const badge = document.getElementById('place-badge');
-  badge.textContent = PLACE_LABELS[pi] || `${pi+1}TH`;
-  badge.className = 'place-badge ' + (PLACE_CLASSES[pi] || 'p4');
-  all.forEach((p,i) => {
-    const k = document.getElementById('kart-'+p.id); if(!k) return;
-    let pip = k.querySelector('.place-pip');
-    if(!pip){ pip=document.createElement('div'); pip.className='place-pip'; k.appendChild(pip); }
-    pip.textContent = PLACE_LABELS[i] || `${i+1}`;
-    pip.style.background = i===0?'#ffd700':i===1?'#b0b0b0':i===2?'#cd7f32':'#333';
-    pip.style.color = i<2?'#000':'#fff';
-  });
-}
-function updateElapsed(){ if(!G.raceStartTime) return; document.getElementById('race-elapsed').textContent=formatTime((performance.now()-G.raceStartTime)/1000); }
-
-// ── NOTIFICATIONS ─────────────────────────────────────────────
-let notifTO=null;
-function showNotif(msg){
-  document.querySelector('.notif')?.remove(); if(notifTO) clearTimeout(notifTO);
-  const el=document.createElement('div'); el.className='notif'; el.textContent=msg;
-  document.body.appendChild(el); notifTO=setTimeout(()=>el?.remove(),3500);
-}
-function showSplash(item){
-  document.querySelector('.powerup-splash')?.remove();
-  const el=document.createElement('div'); el.className='powerup-splash';
-  el.innerHTML=`<span class="splash-icon">${item.emoji}</span><div class="splash-name">${item.name}</div><div class="splash-desc">${item.desc}</div>`;
-  document.body.appendChild(el); setTimeout(()=>el?.remove(),2400);
-}
-
-// ══════════════════════════════════════════════════════════════
-// ONLINE MULTIPLAYER — Rebuilt for reliability
-// Key fixes:
-//  1. Peer ID exchange happens properly via hello/join messages
-//  2. State sync is richer (position + wpm + finished)
-//  3. Kart slots for online players are created in buildTrackWithOnlinePlayers
-//  4. Host relays join messages to all peers (mesh-ish)
-//  5. Invite link uses URL query param ?join=<peerId>
-//  6. Hard player cap: MAX_PLAYERS = 8
-//  7. G.mode = 'online' set in createRoom, joinRoom, AND handleInviteLinkOnLoad
-//     so ALL players (including P3–P8 via invite) get bots zeroed correctly
-// ══════════════════════════════════════════════════════════════
-
-// 8 players max. PeerJS P2P in star topology (all connect to host) keeps
-// connection count linear: N-1 connections on the host, 1 each on peers.
-// That's fine up to 8. Beyond 8 gets slow on consumer connections.
-const MAX_PLAYERS = 8;
-
-function currentPlayerCount(){
-  // Host counts as 1, each entry in onlinePlayers is another
-  return 1 + Object.keys(G.onlinePlayers).length;
-}
-
-function isRoomFull(){
-  return currentPlayerCount() >= MAX_PLAYERS;
-}
-
-function createRoom(){
-  if(!window.Peer){ setOnlineStatus('⚠️ PeerJS not loaded'); return; }
-  G.mode = 'online'; // ← CRITICAL: must be set before race starts so bots are zeroed
-  setOnlineStatus('⏳ Creating room...');
-  try {
-    G.peer = new Peer(); G.isHost = true;
-    G.peer.on('open', id => {
-      G.myPeerId = id;
-      setOnlineStatus('✅ Room ready! Share the invite link below.');
-      const codeWrap = document.getElementById('room-code-wrap');
-      codeWrap.style.display = 'block';
-      document.getElementById('room-code-val').textContent = id.slice(0,14).toUpperCase();
-      document.getElementById('invite-link-wrap').style.display = 'block';
-      document.getElementById('lobby-wrap').classList.add('visible');
-      document.getElementById('lobby-start-btn').style.display = 'inline-block';
-      updateLobby();
-    });
-    G.peer.on('connection', conn => {
-      // Enforce player cap — reject immediately if room is full
-      if(isRoomFull()){
-        // Open the connection just long enough to send a rejection, then close it
-        conn.on('open', () => {
-          conn.send({ type:'full', max:MAX_PLAYERS });
-          setTimeout(() => conn.close(), 500);
-        });
-        return;
-      }
-      G.connections.push(conn);
-      setupConn(conn);
-      setOnlineStatus(`${currentPlayerCount()} / ${MAX_PLAYERS} players`);
-      updateLobby();
-    });
-    G.peer.on('error', err => setOnlineStatus('⚠️ ' + err.type));
-  } catch(e){ setOnlineStatus('⚠️ ' + e.message); }
-}
-
-function joinRoom(){
-  const raw = document.getElementById('join-code-input').value.trim();
-  const code = raw.toLowerCase();
-  if(!code){ setOnlineStatus('Enter a room code or paste the invite link!'); return; }
-  if(!window.Peer){ setOnlineStatus('⚠️ PeerJS not loaded'); return; }
-  G.mode = 'online'; // ← CRITICAL: must be set before race starts so bots are zeroed
-  setOnlineStatus('⏳ Joining...');
-  try {
-    G.peer = new Peer(); G.isHost = false;
-    G.peer.on('open', id => {
-      G.myPeerId = id;
-      const conn = G.peer.connect(code, { reliable: true });
-      G.connections.push(conn);
-      setupConn(conn);
-    });
-    G.peer.on('error', err => {
-      setOnlineStatus('⚠️ Could not connect: ' + err.type);
-    });
-  } catch(e){ setOnlineStatus('⚠️ ' + e.message); }
-}
-
-function setupConn(conn){
-  conn.on('open', () => {
-    setOnlineStatus('✅ Connected!');
-    if(!G.isHost) document.getElementById('lobby-wrap').classList.add('visible');
-    // Introduce ourselves — include our chosen character so the host lobby shows it
-    conn.send({
-      type: 'hello',
-      name: G.selectedChar?.name || 'RACER',
-      emoji: G.selectedChar?.emoji || '🏎️',
-      charId: G.selectedChar?.id || null,
-      peerId: G.myPeerId,
-    });
-    updateLobby();
-  });
-  conn.on('data', d => handleOnlineMsg(d, conn));
-  conn.on('close', () => {
-    G.connections = G.connections.filter(c=>c!==conn);
-    const peerId = Object.keys(G.onlinePlayers).find(pid => G.onlinePlayers[pid]._conn === conn);
-    if(peerId) delete G.onlinePlayers[peerId];
-    const count = currentPlayerCount();
-    setOnlineStatus(`${count} / ${MAX_PLAYERS} player${count === 1 ? '' : 's'}`);
-    updateLobby();
-  });
-  conn.on('error', err => setOnlineStatus('⚠️ Conn error: ' + err));
-}
-
-function handleOnlineMsg(data, conn){
-  switch(data.type){
-
-    case 'full': {
-      // Host rejected us — room is full
-      setOnlineStatus(`⛔ Room is full (max ${data.max || MAX_PLAYERS} players). Try another room.`);
-      showNotif(`⛔ Room full! Max ${data.max || MAX_PLAYERS} players.`);
-      // Clean up our peer
-      G.peer?.destroy(); G.peer=null; G.connections=[];
-      break;
-    }
-
-    case 'hello': {
-      // Secondary cap guard — in case two connections squeezed in simultaneously
-      if(G.isHost && currentPlayerCount() >= MAX_PLAYERS){
-        conn.send({ type:'full', max:MAX_PLAYERS });
-        setTimeout(() => conn.close(), 500);
-        break;
-      }
-      // Register the new player. Store their conn ref so we can track disconnects.
-      G.onlinePlayers[data.peerId] = {
-        name: data.name,
-        emoji: data.emoji,
-        charId: data.charId || null,
-        position: 0, wpm: 0, finished: false,
-        _conn: conn,
-      };
-      updateLobby();
-      if(G.isHost){
-        // Relay this hello to all OTHER connected peers
-        broadcastExcept({ type:'hello', name:data.name, emoji:data.emoji, charId:data.charId||null, peerId:data.peerId }, conn);
-        // Send the host's own identity back to the new joiner
-        conn.send({ type:'hello', name:G.selectedChar?.name||'HOST', emoji:G.selectedChar?.emoji||'🏎️', charId:G.selectedChar?.id||null, peerId:G.myPeerId });
-        // Send all existing players to the new joiner so they see a full lobby
-        Object.entries(G.onlinePlayers).forEach(([pid, p]) => {
-          if(pid !== data.peerId){
-            conn.send({ type:'hello', name:p.name, emoji:p.emoji, charId:p.charId||null, peerId:pid });
-          }
-        });
-        setOnlineStatus(`${currentPlayerCount()} / ${MAX_PLAYERS} players`);
-      }
-      break;
-    }
-
-    case 'charSelect': {
-      // A player updated their character — refresh their lobby entry
-      if(G.onlinePlayers[data.peerId]){
-        G.onlinePlayers[data.peerId].name  = data.name;
-        G.onlinePlayers[data.peerId].emoji = data.emoji;
-        G.onlinePlayers[data.peerId].charId = data.charId;
-      }
-      // If host, relay to other peers
-      if(G.isHost) broadcastExcept({ type:'charSelect', name:data.name, emoji:data.emoji, charId:data.charId, peerId:data.peerId }, conn);
-      updateLobby();
-      break;
-    }
-
-    case 'start': {
-      // Host is firing the race. Set everything up safely.
-      G.matchDuration = data.matchDuration || 300;
-      G.raceText = data.text;  // must be set BEFORE initRaceState
-
-      // Apply authoritative player list from host (has everyone's chosen charId)
-      if(data.players){
-        data.players.forEach(p => {
-          if(G.onlinePlayers[p.peerId]){
-            G.onlinePlayers[p.peerId].name   = p.name;
-            G.onlinePlayers[p.peerId].emoji  = p.emoji;
-            G.onlinePlayers[p.peerId].charId = p.charId;
-          }
-        });
-      }
-
-      // If this joiner hasn't picked a character, assign them a random one quietly
-      if(!G.selectedChar){
-        G.selectedChar = CHARS[Math.floor(Math.random() * CHARS.length)];
-        showNotif(`⚠️ Auto-assigned ${G.selectedChar.name} — pick a char next time!`);
-      }
-
-      initRaceState();
-      G.raceText = data.text;
-      G.charStates = Array(G.raceText.length).fill('rem');
-
-      buildTrackWithOnlinePlayers();
-      buildRaceText();
-      showScreen('countdown');
-      runCountdown();
-      break;
-    }
-
-    case 'progress': {
-      if(G.onlinePlayers[data.peerId]){
-        G.onlinePlayers[data.peerId].position = data.position;
-        G.onlinePlayers[data.peerId].wpm      = data.wpm;
-        G.onlinePlayers[data.peerId].finished = data.finished || false;
-        setKartPos(data.peerId, data.position);
-      }
-      // HOST RELAY: re-broadcast this player's progress to every other peer.
-      // Without this, P2 moves on P1's screen but P3/P4 never see it.
-      // Joiners don't relay — only the host does (star topology).
-      if(G.isHost){
-        broadcastExcept({ type:'progress', peerId:data.peerId, position:data.position, wpm:data.wpm, finished:data.finished||false }, conn);
-      }
-      break;
-    }
-
-    case 'quit': {
-      // A player quit mid-race — mark them as finished at their current position
-      if(G.onlinePlayers[data.peerId]){
-        G.onlinePlayers[data.peerId].finished = true;
-        G.onlinePlayers[data.peerId].quit = true;
-      }
-      if(G.isHost){
-        broadcastExcept({ type:'quit', peerId:data.peerId }, conn);
-      }
-      break;
-    }
-  }
-}
-
-// Build track including online human players as extra lanes
-function buildTrackWithOnlinePlayers(){
-  const c = document.getElementById('track-lanes'); c.innerHTML='';
-  const racers = [
-    {
-      id:'player',
-      name: G.selectedChar?.name || 'YOU',
-      emoji: G.selectedChar?.emoji || '🏎️',
-      color: G.selectedChar?.kart || '#c0392b',
-      init: (G.selectedChar?.name || 'Y')[0],
-    },
-    // AI bots (only present if host ran vs-AI, empty for pure online)
-    ...G.bots.map(b => ({ id:b.char.id, name:b.name, emoji:b.emoji, color:b.char.kart, init:b.name[0] })),
-    // Online human players — use their chosen CHAR data for kart color
-    ...Object.entries(G.onlinePlayers).map(([pid, p]) => {
-      const charData = p.charId ? CHARS.find(c=>c.id===p.charId) : null;
-      return {
-        id: pid,
-        name: p.name,
-        emoji: p.emoji,
-        color: charData?.kart || '#1a6eb5',
-        init: p.name[0],
-      };
-    }),
-  ];
-  racers.forEach(r => {
-    const w = document.createElement('div'); w.className='lane-wrap';
-    w.innerHTML = `<div class="lane">
-      <div class="lane-info"><div class="lane-char">${r.emoji}</div><div class="lane-name">${r.name}</div></div>
-      <div class="lane-track" id="lanetrack-${r.id}">
-        ${ITEM_BOX_POS.map((p,j)=>`<div class="item-box-track" id="ibox-${r.id}-${j}" style="left:calc(${p}% - 11px)">📦</div>`).join('')}
-        <div class="kart" id="kart-${r.id}" style="left:2%">
-          <div class="kart-body" style="background:${r.color}"><span class="kart-init">${r.init}</span></div>
-        </div>
-        <span class="finish-flag-icon">🏁</span>
-      </div></div>`;
-    c.appendChild(w);
-  });
-}
-
-function hostStartRace(){
-  if(!G.selectedChar){ showNotif('Pick a character first!'); return; }
-  const text = TEXTS[Math.floor(Math.random()*TEXTS.length)];
-
-  // Build player list with charIds so all clients can render the right kart colors
-  const playerList = Object.entries(G.onlinePlayers).map(([pid, p]) => ({
-    peerId: pid,
-    name: p.name,
-    emoji: p.emoji,
-    charId: p.charId,
-  }));
-
-  broadcast({
-    type: 'start',
-    text,
-    matchDuration: G.matchDuration,
-    players: playerList,
-  });
-
-  G.raceText = text;  // set before initRaceState
-  initRaceState();
-  G.raceText = text;
-  G.charStates = Array(G.raceText.length).fill('rem');
-  buildTrackWithOnlinePlayers();
-  buildRaceText();
-  showScreen('countdown');
-  runCountdown();
-}
-
-function broadcast(d){ G.connections.forEach(c=>c.open&&c.send(d)); }
-function broadcastExcept(d,ex){ G.connections.filter(c=>c!==ex&&c.open).forEach(c=>c.send(d)); }
-function broadcastProgress(){
-  if(!G.connections.length) return;
-  broadcast({ type:'progress', peerId:G.myPeerId, position:G.position, wpm:G.wpm, finished:G.finished });
-}
-
-function disconnectOnline(){
-  G.peer?.destroy(); G.peer=null; G.connections=[]; G.onlinePlayers={};
-  document.getElementById('room-code-wrap').style.display='none';
-  document.getElementById('invite-link-wrap').style.display='none';
-  document.getElementById('lobby-wrap').classList.remove('visible');
-  document.getElementById('lobby-start-btn').style.display='none';
-  setOnlineStatus('Disconnected.');
-  showScreen('online');
-}
-
-function setOnlineStatus(m){ const e=document.getElementById('online-status'); if(e)e.textContent=m; }
-
-function updateLobby(){
-  const g = document.getElementById('lobby-grid'); if(!g) return;
-  g.innerHTML = '';
-
-  const add = (em, nm, you, isHost=false) => {
-    const s = document.createElement('div'); s.className = 'lobby-slot filled';
-    const badge = isHost ? ' <span style="font-size:.35rem;color:#4a9fe0;vertical-align:middle">HOST</span>' : '';
-    s.innerHTML = `<span class="lobby-slot-emoji">${em}</span><span class="lobby-slot-name${you?' lobby-slot-you':''}">${nm}${you?' ★':''}${badge}</span>`;
-    g.appendChild(s);
-  };
-
-  // Our own slot
-  const myEmoji = G.selectedChar?.emoji || '❓';
-  const myName  = G.selectedChar?.name  || 'PICK A CHAR';
-  add(myEmoji, myName, true, G.isHost);
-
-  // Other players
-  Object.values(G.onlinePlayers).forEach(p => {
-    const charData = p.charId ? CHARS.find(c=>c.id===p.charId) : null;
-    add(charData?.emoji || p.emoji || '❓', charData?.name || p.name, false, false);
-  });
-
-  // Empty slots up to MAX_PLAYERS
-  const filled = currentPlayerCount();
-  const isFull = filled >= MAX_PLAYERS;
-  for(let i = filled; i < MAX_PLAYERS; i++){
-    const s = document.createElement('div'); s.className = 'lobby-slot';
-    s.innerHTML = `<span class="lobby-slot-emoji" style="opacity:.25">👤</span><span class="lobby-slot-name" style="color:#444">Waiting...</span>`;
-    g.appendChild(s);
-  }
-
-  // Update heading with count + FULL badge
-  const heading = document.querySelector('#lobby-wrap .lobby-heading');
-  if(heading){
-    heading.innerHTML = `LOBBY &nbsp;<span style="font-size:.52rem;color:${isFull?'#e74c3c':'#4a9fe0'}">${filled} / ${MAX_PLAYERS}${isFull?' · FULL':''}</span>`;
-  }
-
-  // Update status bar
-  if(G.isHost){
-    setOnlineStatus(isFull
-      ? `⛔ Room full — ${MAX_PLAYERS}/${MAX_PLAYERS} players. Start when ready!`
-      : `✅ ${filled} / ${MAX_PLAYERS} players — waiting for more...`);
-  }
-}
-
-// ── INVITE LINK ───────────────────────────────────────────────
-// Creates a URL like: <current_page>?join=<peerId>
-// Recipient pastes it or visits it — the join code auto-fills.
-function copyInviteLink(){
-  if(!G.myPeerId){ showNotif('Room not ready yet!'); return; }
-  const url = `${location.origin}${location.pathname}?join=${G.myPeerId}`;
-  navigator.clipboard.writeText(url)
-    .then(()=>showNotif('📋 Invite link copied! Send it to your friends.'))
-    .catch(()=>{
-      // Fallback: prompt
-      prompt('Copy this invite link:', url);
-    });
-}
-
-// On page load: if URL has ?join=<code>, pre-fill the join input and show online screen
-function handleInviteLinkOnLoad(){
-  const params = new URLSearchParams(location.search);
-  const joinCode = params.get('join');
-  if(joinCode){
-    G.mode = 'online'; // set mode immediately so everything downstream is correct
-    showScreen('online');
-    const inp = document.getElementById('join-code-input');
-    if(inp) inp.value = joinCode;
-    setOnlineStatus('Invite detected! Pick a character, then click JOIN.');
-  }
-}
-
-// ── UTILS ─────────────────────────────────────────────────────
-function playAgain(){ G.mode==='ai'&&G.selectedChar ? startRace() : startVsAI(); }
-function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a; }
-function formatTime(s){ const m=Math.floor(s/60),sec=Math.floor(s%60); return `${m}:${sec.toString().padStart(2,'0')}`; }
-
-// Quit mid-race — asks for confirmation, broadcasts quit to peers if online
-function confirmExitRace(){
-  if(!confirm('Quit the race? Your progress will be lost.')) return;
-  // Stop the loop
-  if(G.raceRafId) cancelAnimationFrame(G.raceRafId);
-  if(G.elapsedTimer) clearInterval(G.elapsedTimer);
-  // Tell online peers we're gone
-  if(G.mode === 'online'){
-    broadcast({ type:'quit', peerId:G.myPeerId });
-    disconnectOnline();
-    showScreen('menu');
-  } else {
-    showScreen('menu');
-  }
-}
-
-// Leave from results screen in online mode without waiting for others
-function leaveOnlineRace(){
-  disconnectOnline();
-  showScreen('menu');
-}
-
-// ══════════════════════════════════════════════════════════════
-// F012 — CHARACTER UNLOCK SYSTEM
-//
-// Characters unlock by winning races (cumulative wins tracked in stats).
-// LIONEL is always unlocked (starter). Others unlock at win milestones.
-// Unlock thresholds are designed to be achievable but feel earned.
-// Locked chars show ??? and a 🔒 overlay with the requirement.
-// ══════════════════════════════════════════════════════════════
-
-// Each entry: charId → wins needed to unlock (0 = always unlocked)
-const UNLOCK_REQUIREMENTS = {
-  lionel:     0,   // starter — always available
-  jordan:     1,   // win your first race
-  kwan:       3,   // win 3 races
-  john:       5,   // win 5 races
-  shin:       8,   // win 8 races
-  sandro:     12,  // (alessandro) win 12 — high accuracy reward
-  ian:        18,  // win 18 — the strategist, late unlock
-  jason:      25,  // win 25 — wildcard, hardest to earn
-};
-
-// Friendly requirement strings shown on locked cards
-const UNLOCK_LABELS = {
-  lionel:     'Always unlocked',
-  jordan:     'Win 1 race',
-  kwan:       'Win 3 races',
-  john:       'Win 5 races',
-  shin:       'Win 8 races',
-  sandro:     'Win 12 races',
-  ian:        'Win 18 races',
-  jason:      'Win 25 races',
-};
-
-function isCharUnlocked(charId, stats){
-  const req = UNLOCK_REQUIREMENTS[charId] ?? 0;
-  if(req === 0) return true;
-  const wins = stats?.global?.wins ?? 0;
-  return wins >= req;
-}
-
-function getUnlockRequirement(charId){
-  return UNLOCK_LABELS[charId] || 'Win races to unlock';
-}
-
-// Check if any new characters were just unlocked after a race, and notify the player
-function checkNewUnlocks(winsBeforeRace, winsAfterRace){
-  CHARS.forEach(ch => {
-    const req = UNLOCK_REQUIREMENTS[ch.id] ?? 0;
-    if(req > 0 && winsBeforeRace < req && winsAfterRace >= req){
-      setTimeout(() => showNotif(`🔓 UNLOCKED: ${ch.emoji} ${ch.name}!`), 1800);
-    }
-  });
-}
-
-// ══════════════════════════════════════════════════════════════
-// F009 — PERSONAL BEST & STATS TRACKING (localStorage)
-//
-// Storage key: 'ttr_stats'
-// Schema:
-//   { global: { races, wins, bestWpm, bestAcc, totalWpm, totalAcc },
-//     chars:  { [charId]: { races, wins, bestWpm, bestAcc } } }
-// ══════════════════════════════════════════════════════════════
-
-const STATS_KEY = 'ttr_stats';
-
-function loadStats(){
-  try {
-    const raw = localStorage.getItem(STATS_KEY);
-    if(raw) return JSON.parse(raw);
-  } catch(e){}
-  return { global:{ races:0, wins:0, bestWpm:0, bestAcc:0, totalWpm:0, totalAcc:0 }, chars:{} };
-}
-
-function saveStats(stats){
-  try { localStorage.setItem(STATS_KEY, JSON.stringify(stats)); } catch(e){}
-}
-
-// Called at the end of every race. Only tracks player performance (not bots).
-function recordRaceStats(wpm, accuracy, place){
-  if(!G.selectedChar) return null;
-  const stats = loadStats();
-  const charId = G.selectedChar.id;
-  const won = place === 0; // 0-indexed place
-
-  const winsBeforeRace = stats.global.wins;
-
-  // Global
-  stats.global.races++;
-  if(won) stats.global.wins++;
-  stats.global.totalWpm += wpm;
-  stats.global.totalAcc += accuracy;
-  let pbWpm = false, pbAcc = false;
-  if(wpm > stats.global.bestWpm){ stats.global.bestWpm = wpm; pbWpm = true; }
-  if(accuracy > stats.global.bestAcc){ stats.global.bestAcc = accuracy; pbAcc = true; }
-
-  // Per-character
-  if(!stats.chars[charId]) stats.chars[charId] = { races:0, wins:0, bestWpm:0, bestAcc:0 };
-  stats.chars[charId].races++;
-  if(won) stats.chars[charId].wins++;
-  if(wpm > stats.chars[charId].bestWpm) stats.chars[charId].bestWpm = wpm;
-  if(accuracy > stats.chars[charId].bestAcc) stats.chars[charId].bestAcc = accuracy;
-
-  saveStats(stats);
-  // F012: check if any characters just unlocked
-  checkNewUnlocks(winsBeforeRace, stats.global.wins);
-  return { pbWpm, pbAcc };
-}
-
-function gotoStats(){
-  SFX.select();
-  buildStatsScreen();
-  showScreen('stats');
-}
-
-function buildStatsScreen(){
-  const stats = loadStats();
-
-  // Global overview
-  const grid = document.getElementById('stats-global-grid');
-  const avgWpm  = stats.global.races > 0 ? Math.round(stats.global.totalWpm / stats.global.races) : 0;
-  const avgAcc  = stats.global.races > 0 ? Math.round(stats.global.totalAcc / stats.global.races) : 0;
-  const winRate = stats.global.races > 0 ? Math.round((stats.global.wins / stats.global.races) * 100) : 0;
-  grid.innerHTML = `
-    <div class="gstat-box"><div class="gstat-num">${stats.global.races}</div><div class="gstat-lbl">Races</div></div>
-    <div class="gstat-box"><div class="gstat-num">${stats.global.wins}</div><div class="gstat-lbl">Wins</div></div>
-    <div class="gstat-box"><div class="gstat-num">${stats.global.bestWpm}</div><div class="gstat-lbl">Best WPM</div></div>
-    <div class="gstat-box"><div class="gstat-num">${avgWpm}</div><div class="gstat-lbl">Avg WPM</div></div>
-    <div class="gstat-box"><div class="gstat-num">${stats.global.bestAcc}%</div><div class="gstat-lbl">Best ACC</div></div>
-    <div class="gstat-box"><div class="gstat-num">${avgAcc}%</div><div class="gstat-lbl">Avg ACC</div></div>
-    <div class="gstat-box"><div class="gstat-num">${winRate}%</div><div class="gstat-lbl">Win Rate</div></div>
-    <div class="gstat-box"><div class="gstat-num">${stats.global.races > 0 ? stats.global.races - stats.global.wins : 0}</div><div class="gstat-lbl">Losses</div></div>
-  `;
-
-  // Per-character breakdown — show ALL chars, sorted: unlocked+played first, then unlocked, then locked
-  const list = document.getElementById('stats-char-list');
-  list.innerHTML = '';
-  const charEntries = CHARS
-    .map(ch => ({ ch, s: stats.chars[ch.id] || null, unlocked: isCharUnlocked(ch.id, stats) }))
-    .sort((a, b) => {
-      // Sort: played > unlocked-unplayed > locked
-      const scoreA = a.s?.races > 0 ? 2 : a.unlocked ? 1 : 0;
-      const scoreB = b.s?.races > 0 ? 2 : b.unlocked ? 1 : 0;
-      if(scoreB !== scoreA) return scoreB - scoreA;
-      return (b.s?.races||0) - (a.s?.races||0);
-    });
-
-  charEntries.forEach(({ ch, s }) => {
-    const unlocked = isCharUnlocked(ch.id, stats);
-    const wr = s && s.races > 0 ? Math.round((s.wins / s.races) * 100) : 0;
-    const row = document.createElement('div');
-    row.className = 'char-stat-row';
-    if(!unlocked){
-      const req = UNLOCK_REQUIREMENTS[ch.id] ?? 0;
-      const wins = stats.global.wins;
-      row.innerHTML = `
-        <span class="char-stat-emoji" style="opacity:.4">🔒</span>
-        <span class="char-stat-name" style="color:#555">${ch.name}</span>
-        <div class="char-stat-detail">
-          <span>Locked — <b>${UNLOCK_LABELS[ch.id]}</b> (${wins}/${req} wins)</span>
-        </div>`;
-    } else if(!s || s.races === 0){
-      row.innerHTML = `
-        <span class="char-stat-emoji">${ch.emoji}</span>
-        <span class="char-stat-name" style="color:${ch.color}">${ch.name}</span>
-        <div class="char-stat-detail"><span style="color:#555">No races yet</span></div>`;
-    } else {
-      row.innerHTML = `
-        <span class="char-stat-emoji">${ch.emoji}</span>
-        <span class="char-stat-name" style="color:${ch.color}">${ch.name}</span>
-        <div class="char-stat-detail">
-          <span>Races <b>${s.races}</b></span>
-          <span>Wins <b>${s.wins}</b></span>
-          <span>Win% <b>${wr}%</b></span>
-          <span>Best WPM <b>${s.bestWpm}</b></span>
-          <span>Best ACC <b>${s.bestAcc}%</b></span>
-        </div>`;
-    }
-    list.appendChild(row);
-  });
-}
-
-function confirmClearStats(){
-  if(confirm('Reset all stats? This cannot be undone. (Characters will re-lock!)')){
-    localStorage.removeItem(STATS_KEY);
-    G.selectedChar = null; // deselect in case selected char is now locked
-    buildStatsScreen();
-    showNotif('Stats cleared. Fresh start! 🏁');
-  }
-}
-
-// Show personal best banner on results screen
-function showPBBanner(pbWpm, pbAcc){
-  const banner = document.getElementById('pb-banner');
-  if(!banner) return;
-  if(pbWpm || pbAcc){
-    const parts = [];
-    if(pbWpm) parts.push('🏆 NEW BEST WPM!');
-    if(pbAcc) parts.push('🎯 NEW BEST ACCURACY!');
-    banner.textContent = parts.join('  ·  ');
-    banner.style.display = 'block';
-  } else {
-    banner.style.display = 'none';
-  }
-}
-
-// ══════════════════════════════════════════════════════════════
-// F010 — CUSTOM TEXT INPUT
-//
-// Players can paste any text on the custom text screen.
-// The text is stored in G.customText. When set, initRaceState
-// uses it instead of picking from TEXTS[].
-// ══════════════════════════════════════════════════════════════
-
-// Quick presets — short, fun categories
-const TEXT_PRESETS = [
-  { label:'🎓 Inspirational', text:"The only way to do great work is to love what you do. If you haven't found it yet keep looking. Don't settle. As with all matters of the heart you'll know when you find it. Stay hungry stay foolish and never stop asking questions because curiosity is the engine of achievement." },
-  { label:'🖥 Tech Wisdom',   text:"Any fool can write code that a computer can understand. Good programmers write code that humans can understand. First make it work then make it right then make it fast. Simplicity is the soul of efficiency and the best code is the code you never have to write at all." },
-  { label:'🎮 Gaming Quotes', text:"It's dangerous to go alone take this. The cake is a lie. Stay a while and listen. War never changes. A man chooses a slave obeys. The right man in the wrong place can make all the difference in the world. Thank you Mario but our princess is in another castle." },
-  { label:'🌊 Chill Vibes',   text:"The ocean knows no favorites and neither does the wind. Every wave that breaks on the shore has traveled thousands of miles to reach you. The sky at dusk holds every color you have ever loved and every color you have never seen. There is peace in the sound of water and truth in the silence between the waves." },
-  { label:'🔢 Numbers',       text:"One two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty thirty forty fifty sixty seventy eighty ninety one hundred two hundred three hundred four hundred five hundred six hundred seven hundred eight hundred nine hundred one thousand." },
-];
-
-function gotoCustomText(){
-  SFX.select();
-  buildPresetButtons();
-  // Restore any previously entered text
-  const ta = document.getElementById('custom-text-input');
-  if(ta && G.customText){ ta.value = G.customText; onCustomTextInput(); }
-  showScreen('customtext');
-}
-
-function buildPresetButtons(){
-  const wrap = document.getElementById('preset-btns');
-  if(!wrap || wrap.children.length > 0) return; // already built
-  TEXT_PRESETS.forEach((p, i) => {
-    const btn = document.createElement('button');
-    btn.className = 'preset-btn';
-    btn.textContent = p.label;
-    btn.onclick = () => {
-      const ta = document.getElementById('custom-text-input');
-      ta.value = p.text;
-      onCustomTextInput();
-      SFX.select();
-    };
-    wrap.appendChild(btn);
-  });
-}
-
-function onCustomTextInput(){
-  const ta   = document.getElementById('custom-text-input');
-  const text = ta.value.trim();
-  const words = text.length > 0 ? text.split(/\s+/).filter(Boolean).length : 0;
-  const chars = text.length;
-  const estSecs = words > 0 ? Math.round((words / 60) * 60) : 0; // at 60 WPM
-  document.getElementById('custom-word-count').textContent = words;
-  document.getElementById('custom-char-count').textContent = chars;
-  document.getElementById('custom-est-time').textContent  = estSecs > 0 ? formatTime(estSecs) : '—';
-
-  const btn = document.getElementById('custom-race-btn');
-  const valid = chars >= 80;
-  btn.disabled = !valid;
-  btn.textContent = valid
-    ? `▶ RACE THIS TEXT (${words} words)`
-    : `⚠️ NEED ${Math.max(0, 80 - chars)} MORE CHARS`;
-
-  // Store it on G so startRace can pick it up
-  G.customText = valid ? text : null;
-}
-
-function startWithCustomText(){
-  if(!G.customText){ showNotif('Text too short — need at least 80 characters.'); return; }
-  if(!G.selectedChar){ showNotif('Pick a character first!'); showScreen('character'); return; }
-  SFX.select();
-  G.raceText = G.customText;
-  G.customText = null; // consume it
-  initRaceState();
-  buildTrack();
-  buildRaceText();
-  showScreen('countdown');
-  runCountdown();
-}
-</script>
 </body>
 </html>
