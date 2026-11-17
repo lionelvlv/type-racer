@@ -2,6 +2,10 @@
 
 **Play:** https://lionelvlv.github.io/type-racer/
 
+## Documentation
+- [Technical Specification](docs/SPEC.md)
+- [AI Disclosure](docs/AI_DISCLOSURE.md)
+
 ## Features
 - Race against bots or friends through an invite link
 - Live WPM and accuracy stats, playable characters, power-up items
