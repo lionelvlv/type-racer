@@ -1,18 +1,29 @@
 # Type Racer
 
-A high-performance typing speed testing application focused on clean metrics and immediate feedback.
-
-## Documentation
-- [Technical Specification](docs/SPEC.md)
+**Play:** https://lionelvlv.github.io/type-racer/
 
 ## Features
-- Real-time WPM and accuracy metrics.
-- Instant visual feedback for correct/incorrect character entry.
-- Minimalist, distraction-free interface.
+- Race against bots or friends through an invite link
+- Live WPM and accuracy stats, playable characters, power-up items
+- Custom practice text
+- Sound effects generated with the Web Audio API
 
-## Tech Stack
-- Vanilla JavaScript, CSS3, HTML5
-- Testing via custom test suites (`tests/`)
+## How the multiplayer works
+Rooms use [PeerJS](https://peerjs.com/) (WebRTC data channels) in a **star topology**:
+- The host creates a room and shares its peer ID as an invite link.
+- Every guest connects only to the host, and the host relays each player's progress to everyone else.
+- Rooms cap at 8 players. The host is the single source of truth for race start and finish.
 
-## Usage
-Simply open `index.html` in your browser to start a typing test.
+## Code layout
+| File | Responsibility |
+|---|---|
+| `js/state.js` | Global game state |
+| `js/typing.js` | Input handling and per-keystroke correctness |
+| `js/race.js` | Race loop, bots, finish order |
+| `js/online.js` | PeerJS rooms, relaying, joins and leaves |
+| `js/items.js`, `js/characters.js` | Power-ups and characters |
+| `js/stats.js` | WPM and accuracy history |
+| `js/ui.js`, `js/audio.js` | Rendering and sound |
+
+## Run locally
+Static site: open `index.html` or run `npx serve .`
